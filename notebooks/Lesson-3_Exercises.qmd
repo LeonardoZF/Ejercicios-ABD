@@ -163,6 +163,15 @@ Calcula o comprueba las siguientes respuestas usando comandos de R:
 -   ¿Cuál es el valor máximo de la función de densidad?
 
 ::: {#respuesta-1 .callout-note}
+```{r pregunta 1}
+resultado <- tibble(
+  variable = seq(from = -5, to = 5, by = 1e-6),
+  densidad = variable |> dnorm()
+)
+max_densidad <- max(resultado$densidad)
+```
+
+El valor máximo es `r max_densidad`
 :::
 
 ### Pregunta 2
@@ -170,6 +179,12 @@ Calcula o comprueba las siguientes respuestas usando comandos de R:
 -   ¿Para qué valor de la variable aleatoria se da? ¿Cómo llamarías a ese valor?
 
 ::: {#respuesta-2 .callout-note}
+```{r pregunta 2}
+pos_max <- which(resultado$densidad==max_densidad)
+valor <- resultado$variable[pos_max]
+```
+
+Para el valor `r valor`, que es la moda.
 :::
 
 ### Pregunta 3
@@ -177,6 +192,7 @@ Calcula o comprueba las siguientes respuestas usando comandos de R:
 -   El valor máximo, ¿puede ser mayor que 1? Justifica tu respuesta.
 
 ::: {#respuesta-3 .callout-note}
+Sí, lo que debe de ser máximo 1 es la integral de la función de densidad. 
 :::
 
 ### Pregunta 4
@@ -186,6 +202,20 @@ Calcula o comprueba las siguientes respuestas usando comandos de R:
 *(Ejecuta `?cumsum` para consultar la ayuda de esa función).*
 
 ::: {#respuesta-4 .callout-note}
+```{r pregunta 4}
+cdf <- pnorm(seq(from = -5, to = 5, by = .001))
+
+# Crear un dataframe
+df <- tibble(x = seq(from = -5, to = 5, by = .001), cdf = cdf)
+
+# Graficar la CDF
+ggplot(df, aes(x = x, y = cdf)) +
+  geom_line(color = "blue", size = 1) +
+  labs(title = "Función de Distribución (CDF) de N(0,1)",
+       x = "x",
+       y = "F(x)") +
+  theme_minimal()
+```
 :::
 
 ### Pregunta 5
@@ -193,6 +223,12 @@ Calcula o comprueba las siguientes respuestas usando comandos de R:
 -   Calcula el valor esperado de la distribución normal.
 
 ::: {#respuesta-5 .callout-note}
+```{r pregunta 5}
+valor_esperado <- sum(resultado$variable * resultado$densidad * 1e-6)
+valor_esperado
+```
+
+Es prácticamente 0, que coincide con la media de la distribución.
 :::
 
 # Ejercicio 2
@@ -206,6 +242,19 @@ Calcula o comprueba las siguientes respuestas usando comandos de R:
 *(Si no sabes qué limites utilizar, consulta la ayuda de `dbeta()`).*
 
 ::: {#respuesta-6 .callout-note}
+```{r pregunta 6}
+x_vals <- seq(0, 1, by = 0.001)
+beta <- dbeta(x =x_vals ,shape1 = 1,shape2 = 1)
+#Dataframe para graficar
+df <- tibble(x = x_vals, densidad = beta)
+ggplot(df, aes(x=x,y=densidad))+
+  geom_line()+
+  labs(title = "Distribución Beta(1,1)",
+       x = "x",
+       y = "Densidad f(x)") +
+  ylim(0, 1.2) +
+  theme_minimal()
+```
 :::
 
 ### Pregunta 7
@@ -213,6 +262,7 @@ Calcula o comprueba las siguientes respuestas usando comandos de R:
 -   ¿Qué forma tiene?
 
 ::: {#respuesta-7 .callout-note}
+Es una línea recta de 0 a 1, como la uniforme (0,1).
 :::
 
 ## Parámetros de la distribución Beta
@@ -222,6 +272,23 @@ Calcula o comprueba las siguientes respuestas usando comandos de R:
 -   Prueba con diferentes valores de $\alpha$ y $\beta$.
 
 ::: {#respuesta-8 .callout-note}
+```{r}
+# Definir combinaciones de alpha y beta
+alpha_vals <- c(1,2,3,4,5)
+beta_vals <- c(1,2,3,4,5)
+
+df <- expand.grid(alpha = alpha_vals, beta = beta_vals, x = x_vals) %>%
+  mutate(densidad = dbeta(x, shape1 = alpha, shape2 = beta))
+
+ggplot(df, aes(x = x, y = densidad, color = factor(alpha))) +
+  geom_line() +
+  facet_grid(beta ~ alpha) +
+  labs(title = "Distribuciones Beta para distintas combinaciones de alpha y beta",
+       x = "x",
+       y = "Densidad f(x)",
+       color = "Alpha") +
+  theme_minimal()
+```
 :::
 
 ### Pregunta 9
@@ -229,6 +296,7 @@ Calcula o comprueba las siguientes respuestas usando comandos de R:
 -   ¿Qué ocurre a medida que van creciendo?
 
 ::: {#respuesta-9 .callout-note}
+Se van haciendo curvas hasta asemejar una distribución normal.
 :::
 
 ### Pregunta 10
@@ -236,6 +304,7 @@ Calcula o comprueba las siguientes respuestas usando comandos de R:
 -   ¿Qué ocurre cuando son iguales? ¿Y cuándo son distintos?
 
 ::: {#respuesta-10 .callout-note}
+Cuando alpha y beta son iguales, se ven simétricas cuando, mientras que asimétricas cuando los parámetros son distintos.
 :::
 
 ### Pregunta 11
@@ -243,6 +312,24 @@ Calcula o comprueba las siguientes respuestas usando comandos de R:
 -   ¿Qué ocurre si tienen valores ligeramente superiores a 1?
 
 ::: {#respuesta-11 .callout-note}
+```{r pregunta 11}
+alpha_vals <- c(1.1,1.2,1.3,1.4,1.5)
+beta_vals <- c(1.1,1.2,1.3,1.4,1.5)
+
+df <- expand.grid(alpha = alpha_vals, beta = beta_vals, x = x_vals) %>%
+  mutate(densidad = dbeta(x, shape1 = alpha, shape2 = beta))
+
+ggplot(df, aes(x = x, y = densidad, color = factor(alpha))) +
+  geom_line() +
+  facet_grid(beta ~ alpha) +
+  labs(title = "Distribuciones Beta para distintas combinaciones de alpha y beta",
+       x = "x",
+       y = "Densidad f(x)",
+       color = "Alpha") +
+  theme_minimal()
+```
+
+Es como si la línea recta del caso beta(1,1) se doblara hacia abajo formando una curva en forma de U invertida.
 :::
 
 ### Pregunta 12
@@ -250,6 +337,24 @@ Calcula o comprueba las siguientes respuestas usando comandos de R:
 -   ¿Qué ocurre si tienen valores por debajo de 1?
 
 ::: {#respuesta-12 .callout-note}
+```{r}
+alpha_vals <- c(0.2,0.4,0.6,0.8,1)
+beta_vals <- c(0.2,0.4,0.6,0.8,1)
+
+df <- expand.grid(alpha = alpha_vals, beta = beta_vals, x = x_vals) %>%
+  mutate(densidad = dbeta(x, shape1 = alpha, shape2 = beta))
+
+ggplot(df, aes(x = x, y = densidad, color = factor(alpha))) +
+  geom_line() +
+  facet_grid(beta ~ alpha) +
+  labs(title = "Distribuciones Beta para distintas combinaciones de alpha y beta",
+       x = "x",
+       y = "Densidad f(x)",
+       color = "Alpha") +
+  theme_minimal()
+```
+
+Se invierte la forma de la gráfica y ahora sí es como una U regular.
 :::
 
 # Ejercicio 3
@@ -268,6 +373,7 @@ El jefe del departamento de analítica te asigna al proyecto y te pide que ajust
 -   ¿Cómo se representa la "tasa de aceptación" en el modelo?
 
 ::: {#respuesta-13 .callout-note}
+$Y \sim Binomial(n,\theta)$ Siendo n el número de usuarios y $\theta$ la probabilidad de que descarguen la app.
 :::
 
 ### Pregunta 14
@@ -277,6 +383,21 @@ El jefe del departamento de analítica te asigna al proyecto y te pide que ajust
 *(Ajusta los ejes correctamente, si hace falta, como en la distribución uniforme).*
 
 ::: {#respuesta-14 .callout-note}
+Sería una beta no informativa, es decir, $\theta \sim Beta(1,1)$, que corresponde con una uniforme(0,1), es decir que los valores que toma el parámetro son equiprobables de inicio.
+
+```{r pregunta 14}
+x_vals <- seq(0, 1, by = PREC)
+beta <- dbeta(x =x_vals ,shape1 = 1,shape2 = 1)
+#Dataframe para graficar
+df <- tibble(x = x_vals, densidad = beta)
+ggplot(df, aes(x=x,y=densidad))+
+  geom_line()+
+  labs(title = "Distribución Beta(1,1)",
+       x = "x",
+       y = "Densidad f(x)") +
+  ylim(0, 1.2) +
+  theme_minimal()
+```
 :::
 
 ### Pregunta 15
@@ -284,6 +405,7 @@ El jefe del departamento de analítica te asigna al proyecto y te pide que ajust
 -   Supón que $y$ es el número de usuarios/as que han respondido que "Sí" descargarían la app. Formula la verosimilitud del modelo.
 
 ::: {#respuesta-15 .callout-note}
+$$ L(\theta \mid y, n) = P(Y = y \mid \theta) = \binom{n}{y} \theta^y (1 - \theta)^{n - y}$$
 :::
 
 ## Ajuste del modelo
@@ -305,15 +427,82 @@ aceptacion_muestra <- tibble(
 -   Obtén, en base a estos datos, la distribución posterior de la tasa de aceptación (en forma analítica), y represéntala junto a la distribución previa.
 
 ::: {#respuesta-16 .callout-note}
+Para obtener la distribución posterior se debe aplicar el teorema de Bayes:
+$$ P(\theta \mid Y) \propto P(Y \mid \theta) P(\theta) $$
+En los ejercicios pasados definimos ya la verosimilitud como:
+$$
+P(Y \mid \theta) = \binom{n}{y} \theta^y (1 - \theta)^{n - y}
+$$ 
+Además, tenemos que el parámetro $\theta \sim \text{Beta}(1,1)$, es decir:
+$$P(\theta) = \frac{\theta^{\alpha - 1} (1 - \theta)^{\beta - 1}}{B(\alpha, \beta)}, \quad 0 \leq \theta \leq 1$$
+Para este caso se sustituyen $\alpha = 1$ y $\beta = 1$, entonces tenemos que: 
+$$P(\theta) = \frac{\theta^{1 - 1} (1 - \theta)^{1 - 1}}{B(1,1)}$$
+Simplificando obtenemos que $P(\theta) = 1$, y sustituyendo en la fórmula del teorema de Bayes tenemos:
+$$P(\theta \mid Y) \propto \binom{n}{y} \theta^y (1 - \theta)^{n - y} \cdot 1$$
+El coeficiente binomial se puede omitir dado que es una constante respecto de $\theta$. Entonces: 
+$$P(\theta \mid Y) \propto \theta^y (1 - \theta)^{n - y}$$
+Esta expresión asemeja la función de densidad para una distribución beta: 
+$$P(\theta) \propto \theta^{\alpha - 1} (1 - \theta)^{\beta - 1}$$
+Si nos fijamos en los exponentes podemos establecer las siguientes igualdades:
+$$\alpha - 1 = y, \quad \beta - 1 = n - y$$
+Entonces, resolviendo para $\alpha$ y $\beta$:
+$$\alpha= 1+ y, \quad \beta = 1 + (n - y) $$
+Por lo tanto, la distribución posterior de $\theta$ es:
+$$ \theta \mid Y \sim \text{Beta}(1 + y, 1 + (n - y)) $$
+Es decir:
+$$\theta \mid Y \sim \text{Beta}(1 + 17, 1 + (22 - 17)) $$
+Finalmente: 
+$$\theta \mid Y \sim \text{Beta}(18, 6) $$
+```{r pregunta 16}
+y <- sum(aceptacion_muestra$resp_descarga_app == "Si") #Número de veces que respondieron "sí"
+n <- nrow(aceptacion_muestra) #Tamaño de la muestra
+#Valores de parámetros de la distribución posterior
+alpha_post <- 1 + y
+beta_post <- 1 + (n - y)
+
+x_vals <- seq(0, 1, by = PREC) #Soporte de la distribución
+
+beta_prev <- dbeta(x_vals, shape1 = 1, shape2 = 1)  # Distribución previa Beta(1,1)
+beta_posterior <- dbeta(x_vals, shape1 = alpha_post, shape2 = beta_post) #Distribución podterior Beta(18,6)
+
+# Crear dataframe
+df <- tibble(
+  x = rep(x_vals, 2),
+  densidad = c(beta_prev, beta_posterior),
+  Distribucion = rep(c("Previa: Beta(1,1)", "Posterior: Beta(18,6)"), each = length(x_vals))
+)
+
+# Graficar con ggplot
+ggplot(df, aes(x = x, y = densidad, color = Distribucion)) +
+  geom_line() +
+  labs(
+    title = "Distribución Previa vs. Posterior de la Tasa de Aceptación",
+    x = expression("Tasa de Aceptación " ~ (theta)),
+    y = "Densidad"
+  ) +
+  theme_minimal()
+```
 :::
 
 ### Pregunta 17
 
--   Obtén el valor esperado y la moda de la distribuión posterior. ¿Cómo los interpretarías?
+-   Obtén el valor esperado y la moda de la distribución posterior. ¿Cómo los interpretarías?
 
 *(Nota: Ten en cuenta la "precisión" al calcular el "peso" de cada muestra.)*
 
 ::: {#respuesta-17 .callout-note}
+```{r pregunta 17}
+valor_esperado <- alpha_post / (alpha_post + beta_post)
+
+moda <- (alpha_post - 1) / (alpha_post + beta_post - 2)
+
+# Imprimir resultados con precisión
+cat("Valor esperado:", valor_esperado, "\n")
+cat("Moda:", moda, "\n")
+
+
+```
+El valor esperado indica que, en promedio, la tasa esperada de aceptación de la app es aproximadamente 75%. La moda de 0.77 indica que este es el valor más probable de la tasa de aceptación con base en los datos observados.
 :::
 
 ## Ajuste con una nueva muestra
