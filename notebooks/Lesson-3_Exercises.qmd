@@ -533,6 +533,7 @@ aceptacion_muestra_2 <- tibble(
 -   ¿Qué distribución previa utilizarías en esta ocasión? Formúlala.
 
 ::: {#respuesta-18 .callout-note}
+La distribución que utilizaría sería la posterior que obtuvimos previamente, es decir: $\theta \sim Beta(18,6)$
 :::
 
 ### Pregunta 19
@@ -540,6 +541,72 @@ aceptacion_muestra_2 <- tibble(
 -   Obtén la distribución posterior analítica después de esta segunda muestra, represéntala junto con las dos distribuciones anteriores, y obtén los estimadores posteriores esperado y modal.
 
 ::: {#respuesta-19 .callout-note}
+Para obtener la distribución posterior se debe aplicar el teorema de Bayes de nuevo. Procedemos análogamente a los cálculos anteriores:
+$$ P(\theta \mid Y) \propto P(Y \mid \theta) P(\theta) $$
+La verosimilitud está dada por:
+$$
+P(Y \mid \theta) = \binom{n}{y} \theta^y (1 - \theta)^{n - y}
+$$ 
+El parámetro $\theta \sim \text{Beta}(18,6)$, es decir:
+$$P(\theta) \propto \theta^{\alpha - 1} (1 - \theta)^{\beta - 1}, \quad 0 \leq \theta \leq 1$$
+
+Para este caso se sustituyen $\alpha = 18$ y $\beta = 6$, entonces tenemos que: 
+$$P(\theta) \propto \theta^{18 - 1} (1 - \theta)^{6 - 1}$$
+Sustituyendo en la fórmula del teorema de Bayes tenemos:
+$$P(\theta \mid Y) \propto \binom{n}{y} \theta^y (1 - \theta)^{n - y} \cdot \theta^{17} (1 - \theta)^{5}$$
+El coeficiente binomial se puede omitir dado que es una constante respecto de $\theta$, y al agrupar los exponentes se tiene: 
+$$P(\theta \mid Y) \propto \theta^{y + 17} (1 - \theta)^{(n - y) + 5}$$
+Sustituyendo $y$ y $n$:
+$$P(\theta \mid Y) \propto \theta^{65 + 17} (1 - \theta)^{(113 - 65) + 5}$$
+Ahora tenemos:
+$$P(\theta \mid Y) \propto \theta^{82} (1 - \theta)^{53}$$
+Comparamos con la forma estándar de la distribución Beta:
+$$P(\theta) \propto \theta^{\alpha - 1} (1 - \theta)^{\beta - 1}$$
+Entonces se obtienen las expresiones necesarias para obtener los nuevos parámetros:
+$$\alpha - 1 = 82, \quad \beta - 1 = 53\\
+\iff
+\alpha = 82 + 1 = 83, \quad \beta = 53 + 1 = 54
+$$
+Por lo tanto, la distribución posterior de $\theta$ es:
+$$\theta \mid Y \sim \text{Beta}(83, 54) $$
+```{r pregunta 19.1}
+# Parámetros de las distribuciones
+alpha_prev <- 1
+beta_prev <- 1
+alpha_post_1 <- 18
+beta_post_1 <- 6
+alpha_post_2 <- 83
+beta_post_2 <- 54
+
+# Calcular las densidades de cada distribución
+beta_previa <- dbeta(x_vals, shape1 = alpha_prev, shape2 = beta_prev)  # Beta(1,1)
+beta_posterior_1 <- dbeta(x_vals, shape1 = alpha_post_1, shape2 = beta_post_1)  # Beta(18,6)
+beta_posterior_2 <- dbeta(x_vals, shape1 = alpha_post_2, shape2 = beta_post_2)  # Beta(83,54)
+
+# Crear un dataframe para graficar
+df <- tibble(
+  x = rep(x_vals, 3),
+  densidad = c(beta_previa, beta_posterior_1, beta_posterior_2),
+  Distribucion = rep(c("Previa: Beta(1,1)", "Posterior 1: Beta(18,6)", "Posterior 2: Beta(83,54)"), each = length(x_vals))
+)
+
+# Graficar con ggplot
+ggplot(df, aes(x = x, y = densidad, color = Distribucion)) +
+  geom_line(size = 1) +
+  labs(
+    title = "Evolución de las Distribuciones de la Tasa de Aceptación",
+    x = expression("Tasa de Aceptación " ~ (theta)),
+    y = "Densidad"
+  ) +
+  theme_minimal()
+
+```
+```{r pregunta 19.2}
+valor_esperado_2 <- alpha_post_2 / (alpha_post_2 + beta_post_2)
+moda_2 <- (alpha_post_2 - 1) / (alpha_post_2 + beta_post_2 - 2)
+cat("Nuevo valor esperado:", round(valor_esperado_2, 4), "\n")
+cat("Nueva moda:", round(moda_2, 4), "\n")
+```
 :::
 
 ## Ajuste con las muestras colapsadas
