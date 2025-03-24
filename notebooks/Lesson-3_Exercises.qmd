@@ -447,12 +447,12 @@ $$\alpha - 1 = y, \quad \beta - 1 = n - y$$
 Entonces, resolviendo para $\alpha$ y $\beta$:
 $$\alpha= 1+ y, \quad \beta = 1 + (n - y) $$
 Por lo tanto, la distribución posterior de $\theta$ es:
-$$ \theta \mid Y \sim \text{Beta}(1 + y, 1 + (n - y)) $$
+$$ (\theta \mid Y) \sim \text{Beta}(1 + y, 1 + (n - y)) $$
 Es decir:
-$$\theta \mid Y \sim \text{Beta}(1 + 17, 1 + (22 - 17)) $$
+$$(\theta \mid Y) \sim \text{Beta}(1 + 17, 1 + (22 - 17)) $$
 Finalmente: 
-$$\theta \mid Y \sim \text{Beta}(18, 6) $$
-Esto es equivalente a decir que $\theta \mid Y \sim \text{Beta}(\alpha + y, \beta + n-y)$, pues en este ejercicio $\alpha = 1 = \beta$.
+$$(\theta \mid Y) \sim \text{Beta}(18, 6) $$
+Esto es equivalente a decir que $(\theta \mid Y) \sim \text{Beta}(\alpha + y, \beta + n-y)$, pues en este ejercicio $\alpha = 1 = \beta$.
 
 ```{r pregunta 16}
 y <- sum(aceptacion_muestra$resp_descarga_app == "Si") #Número de veces que respondieron "sí"
@@ -564,11 +564,11 @@ $$\alpha - 1 = 82, \quad \beta - 1 = 53\\
 \alpha = 82 + 1 = 83, \quad \beta = 53 + 1 = 54
 $$
 Por lo tanto, la distribución posterior de $\theta$ es:
-$$\theta \mid Y \sim \text{Beta}(83, 54) $$
-Esto es equivalente a formularlo como $\theta \mid Y \sim \text{Beta}_{posterior} (\alpha_{previa} + y, \beta_{previa} + (n-y))$, y en este ejercicio teníamos $\alpha_{previa} = 18, \beta{previa} = 6, y = 65, n = 113$. Es decir:
-$$\theta \mid Y \sim \text{Beta}_{posterior}(18+65,6+(113-65))\\
+$$(\theta \mid Y) \sim \text{Beta}(83, 54) $$
+Esto es equivalente a formularlo como ($\theta \mid Y) \sim \text{Beta}_{posterior} (\alpha_{previa} + y, \beta_{previa} + (n-y))$, y en este ejercicio teníamos $\alpha_{previa} = 18, \beta_{previa} = 6, y = 65, n = 113$. Es decir:
+$$(\theta \mid Y) \sim \text{Beta}_{posterior}(18+65,6+(113-65))\\
 \iff
-\theta \mid Y \sim \text{Beta}_{posterior}(83,54)$$
+(\theta \mid Y) \sim \text{Beta}_{posterior}(83,54)$$
 ```{r pregunta 19.1}
 # Parámetros de las distribuciones
 alpha_prev <- 1
@@ -592,7 +592,7 @@ df <- tibble(
 
 # Graficar con ggplot
 ggplot(df, aes(x = x, y = densidad, color = Distribución)) +
-  geom_line(size = 1) +
+  geom_line() +
   labs(
     title = "Distribuciones previas y posterior de Tasa de Aceptación",
     x = expression("Tasa de Aceptación " ~ (theta)),
@@ -632,38 +632,33 @@ $$ P(\theta \mid Y) \propto P(Y \mid \theta) \cdot P(\theta) $$
 
 La verosimilitud está dada por:
 $$P(Y \mid \theta) = \binom{n}{y} \theta^y (1 - \theta)^{n - y}$$ 
-En este caso, utilizamos como distribución previa la posterior obtenida en la etapa anterior:
-$$\theta \sim \text{Beta}(83, 54)$$
+En este caso, utilizamos como distribución previa una no informativa:
+$$\theta \sim \text{Beta}(1, 1)$$
 Entonces tenemos:
-$$P(\theta) \propto \theta^{\alpha - 1} (1 - \theta)^{\beta - 1}, \quad \text{con } \alpha = 83,\ \beta = 54$$
+$$P(\theta) \propto \theta^{\alpha - 1} (1 - \theta)^{\beta - 1}, \quad \text{con } \alpha = 1,\ \beta = 1$$
 
 Sustituyendo los valores correspondientes de $\alpha$ y $\beta$ obtenemos:
-$$P(\theta) \propto \theta^{83 - 1} (1 - \theta)^{54 - 1} = \theta^{82} (1 - \theta)^{53}$$
+$$P(\theta) \propto \theta^{1 - 1} (1 - \theta)^{1 - 1} = \theta^{0} (1 - \theta)^{0}$$
 Sustituyendo en la fórmula del teorema de Bayes:
-$$P(\theta \mid Y) \propto \binom{n}{y} \theta^y (1 - \theta)^{n - y} \cdot \theta^{82} (1 - \theta)^{53}$$
+$$P(\theta \mid Y) \propto \binom{n}{y} \theta^y (1 - \theta)^{n - y} \cdot 1$$
 
-El coeficiente binomial se puede omitir, ya que es constante respecto de \( \theta \). Entonces, al agrupar exponentes tenemos:
-$$
-P(\theta \mid Y) \propto \theta^{y + 82} (1 - \theta)^{(n - y) + 53}
-$$
-Sustituyendo los valores observados $y = 82$ y $n = 135$:
-$$P(\theta \mid Y) \propto \theta^{82 + 82} (1 - \theta)^{(135 - 82) + 53}
-= \theta^{164} (1 - \theta)^{106}$$
+El coeficiente binomial se puede omitir, ya que es constante respecto de \( \theta \). Entonces sustituyendo los valores observados $y = 82$ y $n = 135$, tenemos:
+$$P(\theta \mid Y) \propto \theta^{82} (1 - \theta)^{(135 - 82)} = P(\theta \mid Y) \propto \theta^{82} (1 - \theta)^{53}$$
 Comparando con la forma de la distribución Beta:
 $$P(\theta) \propto \theta^{\alpha - 1} (1 - \theta)^{\beta - 1}$$
 Identificamos:
-$$\alpha - 1 = 164, \quad \beta - 1 = 106\\
-\iff \alpha = 165, \quad \beta = 107$$
+$$\alpha - 1 = 82, \quad \beta - 1 = 53\\
+\iff \alpha = 83, \quad \beta = 54$$
 \textbf{Por lo tanto, la distribución posterior de $\theta$ después de observar la muestra total es:}
-$$\theta \mid Y \sim \text{Beta}(165,\ 107)$$
+$$(\theta \mid Y) \sim \text{Beta}(83,54)$$
 O equivalentemente:
-$$\theta \mid Y \sim \text{Beta}_{posterior}(83+82,54+(135-82))\\
+$$(\theta \mid Y) \sim \text{Beta}_{posterior}(1+82,1+(135-82))\\
 \iff
-\theta \mid Y \sim \text{Beta}_{posterior}(165,107)$$
+\theta (\mid Y) \sim \text{Beta}_{posterior}(83,54)$$
 ```{r pregunta 20}
 # Parámetros de la nueva distribución posterior (colapsada)
-alpha_post_3 <- 165
-beta_post_3 <- 107
+alpha_post_3 <- 83
+beta_post_3 <- 54
 
 # Calcular la densidad de la nueva posterior
 x_vals_beta <- seq(0, 1, by = PREC) #Soporte
@@ -677,20 +672,27 @@ df_total <- tibble(
     c("Previa 1: Beta(1,1)", 
       "Posterior 1 (Previa 2): Beta(18,6)", 
       "Posterior 2 (Previa 3): Beta(83,54)", 
-      "Posterior 3: Beta(165,107)"), 
+      "Posterior 3: Beta(83,54)"), 
     each = length(x_vals_beta)
   )
 )
 
-# Graficar todas las curvas
-ggplot(df_total, aes(x = x, y = densidad, color = Distribución)) +
+# Graficar todas las curvas con líneas diferenciadas
+ggplot(df_total, aes(x = x, y = densidad, color = Distribución, linetype = Distribución)) +
   geom_line() +
+  scale_linetype_manual(values = c(
+    "Previa 1: Beta(1,1)" = "solid",
+    "Posterior 1 (Previa 2): Beta(18,6)" = "solid",
+    "Posterior 2 (Previa 3): Beta(83,54)" = "solid",
+    "Posterior 3: Beta(83,54)" = "dashed"
+  )) +
   labs(
-    title = "Evolución completa de las Distribuciones de la Tasa de Aceptación",
+    title = "Distribuciones previas y posterior de Tasa de Aceptación",
     x = expression("Tasa de Aceptación " ~ (theta)),
     y = "Densidad"
   ) +
   theme_minimal()
+
 
 # Calcular estimadores para la distribución final (colapsada)
 valor_esperado_3 <- alpha_post_3 / (alpha_post_3 + beta_post_3)
@@ -706,7 +708,8 @@ cat("Moda posterior (total):", round(moda_3, 4), "\n")
 
 ::: {#respuesta-21 .callout-note}
 La última distribución posterior tiene aún menos variabilidad, lo que indica que la estimación de la tasa de aceptación es más precisa. En el enfoque Bayesiano, los parámetros del modelo (en este caso $\theta$) se tratan como variables aleatorias, por lo que es posible obtener distribuciones completas sobre ellos, asignarles probabilidades, y obtener intervalos de credibilidad en los que sí es correcto decir que es hay X% de probabilidad de que un parámetro se encuentre entre cierto intervalo. 
-Una similitud que observo entre ambos enfoques es que a mayor tamaño de muestra, menor es la incertidumbre en la estimación, reflejado aquí en que la distribución posterior se concentra más alrededor del valor central. Aunque los fundamentos son distintos, para ambas aproximaciones más datos dan estimaciones más precisas.
+Para el último ejercicio, en donde se colapsan las muestras, calculé las distribuciones posteriores bajo dos distintas distribuciones previas, la beta (83,54) del inciso anterior, y la beta (1,1) que es no informativa. Los resultados son discrepantes y lo que me hace concluir es que a pesar de que el tamaño de muestra es más grande (n=135), al tomar la distribución previa no informativa, los resultados son iguales a la estimación cuando la muestra solamente tenía 113 observaciones. Esto resalta una diferencia importante entre ambos enfoques ya que en el marco frecuentista las estimaciones son altamente sensibles al tamaño de la muestra, mienstras que aquí se observa que no. 
+
 :::
 
 # Ejercicio 4
@@ -777,7 +780,7 @@ $n =$ `r n` (tamaño de la muestra),
 
 $\bar{y} =$ `r y_barra` (media muestral),  
 
-$\sigma^2 =$ `r sigma2` (varianza muestral = varianza de la versoimilitud),  
+$\sigma^2 =$ `r sigma2` (varianza muestral = varianza de la verosimilitud),  
 
 $\mu_0 = 247$ (media de distribucipon previa),  
 
