@@ -103,6 +103,7 @@ $$
 -   Utilizando la expresión analítica del modelo, obtén la expresión analítica de la distribución posterior de la media para cada una de las dos clases, con 2 decimales.
 
 ::: {#respuesta-1 .callout-note}
+Para la clase 1 es: N(\mu_{post}, \sigma^2_{post})
 :::
 
 ## Simulación de Monte Carlo
