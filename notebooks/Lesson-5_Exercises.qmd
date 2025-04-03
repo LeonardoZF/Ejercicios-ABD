@@ -103,7 +103,16 @@ $$
 -   Utilizando la expresión analítica del modelo, obtén la expresión analítica de la distribución posterior de la media para cada una de las dos clases, con 2 decimales.
 
 ::: {#respuesta-1 .callout-note}
-Para la clase 1 es: N(\mu_{post}, \sigma^2_{post})
+Para la clase 1 tenemos que $$\bar{y}_{1} = `r mean(clase_1$tiempo)`$$ y $$\sigma_{1}^2 = `r ceiling(var(clase_1$tiempo))`$$.
+Entonces al sustituir en la fórmula de la media posterior se obtiene: $$\mu_\_{post_1} = \frac{(2073) (247) + (27) (1156) (234)}{(2073) + (27) 1156} = 234.81$$
+Sustituyendo para obtener la varianza posterior se tiene lo siguiente: $$\sigma^2\_{post_1} = \frac{(2073) (1156)}{(2073) + (27) (1156)} = 71.98$$
+La distribución posterior para la clase 1 es: $$p(\mu | y_1) = N(234.81, 71.98)$$
+
+Para la clase 2 se procede análogamente: tenemos que $$\bar{y}_{2} = `r ceiling(mean(clase_2$tiempo))`$$ y $$\sigma_{2}^2 = `r ceiling(var(clase_2$tiempo))`$$.
+Al sustituir en la fórmula de la media posterior se obtiene:
+$$\mu_\_{post_2} = \frac{(1695)(247) + (24)(1156)(221)}{1695 + (24)(1156)} = 222.5$$
+La varianza posterior se obtiene al sustituir: $$\sigma^2_{post_2} = \frac{(1695)(1156)}{1695 + (24)( 1156)} = 66.56$$
+La distribución posterior para la clase 2 es: $$p(\mu | y_2) = N(222.5, 66.56)$$
 :::
 
 ## Simulación de Monte Carlo
