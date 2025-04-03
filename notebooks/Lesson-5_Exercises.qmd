@@ -131,6 +131,10 @@ set.seed(20250318)
 ```
 
 ::: {#respuesta-2 .callout-note}
+```{r}
+muestra_1 <- rnorm(500, mean = 234.81, sd = sqrt(71.98))
+muestra_2 <- rnorm(500, mean = 222.5, sd = sqrt(66.56))
+```
 :::
 
 ## Inferencia con la media de la distribución posterior
@@ -140,6 +144,13 @@ set.seed(20250318)
 -   Con las distribuciones simuladas de la pregunta anterior, estima la media y la varianza de cada distribución. Compara los resultados con los obtenidos en la Pregunta 1.
 
 ::: {#respuesta-3 .callout-note}
+```{r}
+mean(muestra_1)
+var(muestra_1)
+mean(muestra_2)
+var(muestra_2)
+```
+Las medias son prácticamente iguales pero las varianzas sí difieren un tanto.
 :::
 
 ## Tamaño muestral y error estándar de Monte Carlo
