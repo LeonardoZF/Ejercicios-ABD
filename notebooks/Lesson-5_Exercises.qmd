@@ -103,7 +103,7 @@ $$
 -   Utilizando la expresión analítica del modelo, obtén la expresión analítica de la distribución posterior de la media para cada una de las dos clases, con 2 decimales.
 
 ::: {#respuesta-1 .callout-note}
-Para la clase 1 tenemos que $$\bar{y}_{1} = `r mean(clase_1$tiempo)`$$ y $$\sigma_{1}^2 = `r ceiling(var(clase_1$tiempo))`$$.
+Para la clase 1 tenemos que $$\bar{y}_{1} = `r mean(clase_1$tiempo)`$$ y $$\sigma_{1}^2 = `r ceiling(var(clase_1$tiempo))`$$
 Entonces al sustituir en la fórmula de la media posterior se obtiene: $$\mu_\_{post_1} = \frac{(2073) (247) + (27) (1156) (234)}{(2073) + (27) 1156} = 234.81$$
 Sustituyendo para obtener la varianza posterior se tiene lo siguiente: $$\sigma^2\_{post_1} = \frac{(2073) (1156)}{(2073) + (27) (1156)} = 71.98$$
 La distribución posterior para la clase 1 es: $$p(\mu | y_1) = N(234.81, 71.98)$$
@@ -144,13 +144,17 @@ muestra_2 <- rnorm(500, mean = 222.5, sd = sqrt(66.56))
 -   Con las distribuciones simuladas de la pregunta anterior, estima la media y la varianza de cada distribución. Compara los resultados con los obtenidos en la Pregunta 1.
 
 ::: {#respuesta-3 .callout-note}
-```{r}
-mean(muestra_1)
-var(muestra_1)
-mean(muestra_2)
-var(muestra_2)
+```{r,echo=FALSE}
+media_1 <- mean(muestra_1)
+varianza_1 <- var(muestra_1)
+media_2 <- mean(muestra_2)
+varianza_2 <- var(muestra_2)
+cat("Media 1:", sprintf("%.2f",media_1), "\n",
+    "Varianza 1:", sprintf("%.2f",varianza_1), "\n",
+    "Media 2:", sprintf("%.2f",media_2), "\n",
+    "Varianza 2:", sprintf("%.2f",varianza_2), "\n")
 ```
-Las medias son prácticamente iguales pero las varianzas sí difieren un tanto.
+Las medias son prácticamente iguales pero las varianzas sí difieren un tanto, sobre todo para la muestra 1.
 :::
 
 ## Tamaño muestral y error estándar de Monte Carlo
@@ -160,6 +164,27 @@ Las medias son prácticamente iguales pero las varianzas sí difieren un tanto.
 -   Calcula el error estándar de Monte Carlo de las medias estimadas por el método de Monte Carlo [@hoff2009, p. 56], y su intervalo al 95% de confianza (p. 57). Asume que las varianzas verdaderas son desconocidas (i.e., utiliza las varianzas obtenidas por el método de Monte Carlo). ¿Cuál es la amplitud de los intervalos? Comprueba si los valores reales (obtenidos analíticamente) están comprendidos en los intervalos
 
 ::: {#respuesta-4 .callout-note}
+Para obtener el error estándar se aplica la fórmula $$SE=\sqrt \frac{\hat{\sigma}^2}{S}$$, siendo $\hat{\sigma}^2$ la varianza que calculamos en los pasos previos de las muestras simuladas y $S$ el tamaño de la muestra (500).
+Entonces los errores estándar para ambas, y sus respectivos intervalos de confianza con amplitud son:
+```{r, echo=FALSE}
+S <- 500
+se_1 <- sqrt(varianza_1 / S)
+se_2 <- sqrt(varianza_2 / S)
+
+ic_1 <- c(media_1 - 2 * se_1, media_1 + 2 * se_1)
+ic_2 <- c(media_2 - 2 * se_2, media_2 + 2 * se_2)
+
+cat("Clase 1:\n")
+cat("  SE:", sprintf("%.4f", se_1), "\n")
+cat("  IC 95% media:", sprintf("%.2f", ic_1[1]), "a", sprintf("%.2f", ic_1[2]), "\n")
+cat("  Amplitud del intervalo:", sprintf("%.2f", ic_1[2]-ic_1[1]),"\n")
+
+cat("Clase 2:\n")
+cat("  SE:", sprintf("%.4f", se_2), "\n")
+cat("  IC 95% media:", sprintf("%.2f", ic_2[1]), "a", sprintf("%.2f", ic_2[2]), "\n")
+cat("  Amplitud del intervalo:", sprintf("%.2f", ic_2[2]-ic_2[1]))
+```
+Ambos valores de las medias obtenidos analíticamente (234.81 y 222.5) se encuentran en los respectivos intervalos.
 :::
 
 ### Pregunta 5
@@ -167,6 +192,31 @@ Las medias son prácticamente iguales pero las varianzas sí difieren un tanto.
 -   En base a las varianzas obtenidas por el método de Monte Carlo, determina el tamaño muestral de la distribución posterior necesario para alcanzar una precisión de 2 decimales en la estimación de la media de las distribuciones posteriores [@hoff2009, p. 56 ---vas a tener que "despejar" el tamaño de la muestra simulada]. Utiliza el valor mayor de ambas distribuciones para volver a calcular las medias, y comprueba si se alcanza la precisión esperada.
 
 ::: {#respuesta-5 .callout-note}
+Para alcanzar una precisión de 2 decimales en la estimación de la media de las distribuciones posteriores se requiere que el intervalo completo esté contenido dentro de una centésima (0.01). Es decir, se necesita $2 \cdot \sqrt{ \frac{ \hat{\sigma}^2 }{S} } < 0.01$. Se despeja entonces el tamaño muestral $S$:
+$$\sqrt{ \frac{ \hat{\sigma}^2 }{S}} < \frac{0.01}{2} \iff \frac{\hat{\sigma}^2 }{S} < (0.005)^2 = 0.000025$$
+Finalmente, se obtiene el valor requerido de $S$:
+$$ S > \frac{ \hat{\sigma}^2 }{0.000025} = \frac{`r max(varianza_1, varianza_2)`}{0.000025}=`r max(varianza_1, varianza_2) / 0.000025`$$
+Ahora, para comprobar que sí hay ese grado de precisión, se simula una nueva muestra con tamaño muestral $S$:
+```{r, echo=FALSE}
+set.seed(20250318)
+S <- ceiling(max(varianza_1, varianza_2) / 0.000025)
+muestra_final_1 <- rnorm(S, mean = 234.81, sd = sqrt(max(varianza_1, varianza_2)))
+media_final_1 <- mean(muestra_final_1)
+se_final_1 <- sqrt(var(muestra_final_1) / S)
+ic_final_1 <- c(media_final_1 - 2 * se_final_1, media_final_1 + 2 * se_final_1)
+amplitud_ic_final_1 <- ic_final_1[2] - ic_final_1[1]
+cat("IC 95% (muestra 1):", sprintf("%.4f", ic_final_1[1]), "a", sprintf("%.4f", ic_final_1[2]), "\n")
+
+muestra_final_2 <- rnorm(S, mean = 222.5, sd = sqrt(max(varianza_1, varianza_2)))
+media_final_2 <- mean(muestra_final_2)
+se_final_2 <- sqrt(var(muestra_final_2) / S)
+ic_final_2 <- c(media_final_2 - 2 * se_final_2, media_final_2 + 2 * se_final_2)
+amplitud_ic_final_2 <- ic_final_2[2] - ic_final_2[1]
+cat("IC 95% (muestra 2):", sprintf("%.4f", ic_final_2[1]), "a", sprintf("%.4f", ic_final_2[2]), "\n")
+```
+La amplitud del intervalo de confianza pra la muestra 1 es de `r amplitud_ic_final_1` y tenemos que $SE = `r se_final_1`$; dado que el intervalo se construye como $\mu \pm 2\cdot SE$ entonces sí tenemos la precisión requerida (en este caso < 0.01).
+
+Para la muestra 2 tenemos también una amplitud de `r amplitud_ic_final_2` y un $SE = `r se_final_2`$, por lo que sí tenemos la precisión requerida (< 0.01).
 :::
 
 ## Inferencia de intervalos y probabilidades
@@ -184,6 +234,70 @@ Las medias son prácticamente iguales pero las varianzas sí difieren un tanto.
 Obtén los resultados analíticos con las funciones `qnorm()` y `pnorm()`, y compara ambos.
 
 ::: {#respuesta-6 .callout-note}
+Primero calculo los intervalos de credibilidad del 99%:
+```{r, echo=FALSE}
+#IC 99% de las muestras simuladas
+ic_99_1_sim <- quantile(muestra_final_1, probs = c(0.005, 0.995))
+ic_99_2_sim <- quantile(muestra_final_2, probs = c(0.005, 0.995))
+
+#Medias y desviaciones estándar de las distribuciones posteriores
+mu_1 <- 234.81
+mu_2 <- 222.5
+sigma_1 <- sqrt(varianza_1)
+sigma_2 <- sqrt(varianza_2)
+
+#IC  99% analítico
+ic_99_1_an <- qnorm(c(0.005, 0.995), mean = mu_1, sd = sigma_1)
+ic_99_2_an <- qnorm(c(0.005, 0.995), mean = mu_2, sd = sigma_2)
+
+cat("Clase 1:\n")
+cat("  IC 99% simulado: ", sprintf("%.4f",ic_99_1_sim), "\n")
+cat("  IC 99% analítico:", sprintf("%.4f",ic_99_1_an), "\n\n")
+
+cat("Clase 2:\n")
+cat("  IC 99% simulado: ", sprintf("%.4f",ic_99_2_sim), "\n")
+cat("  IC 99% analítico:", sprintf("%.4f",ic_99_2_an), "\n\n")
+```
+Para la clase 1 son prácticamente iguales pero para la clase 2 hay un poco de diferencia. 
+Ahora se calculan los cuartiles siguiendo el mismo proceso (comparando resultados simulados y analíticos):
+```{r, echo=FALSE}
+cuartiles_1_sim <- quantile(muestra_final_1, probs = c(0.25, 0.5, 0.75))
+cuartiles_2_sim <- quantile(muestra_final_2, probs = c(0.25, 0.5, 0.75))
+
+cuartiles_1_an <- qnorm(c(0.25, 0.5, 0.75), mean = mu_1, sd = sigma_1)
+cuartiles_2_an <- qnorm(c(0.25, 0.5, 0.75), mean = mu_2, sd = sigma_2)
+
+cat("Clase 1:\n")
+cat("  Cuartiles simulados : ", sprintf("%.4f", cuartiles_1_sim), "\n")
+cat("  Cuartiles analíticos: ", sprintf("%.4f", cuartiles_1_an), "\n\n")
+
+cat("Clase 2:\n")
+cat("  Cuartiles simulados : ", sprintf("%.4f", cuartiles_2_sim), "\n")
+cat("  Cuartiles analíticos: ", sprintf("%.4f", cuartiles_2_an), "\n")
+```
+Aquí el grado de similitud es casi perfecto. 
+Finalmente, se calculan las probabilidades de cada clase de tener una media menor a la de la población con base en lo simulado y en lo obtenido analíticamente:
+```{r, echo=FALSE}
+mu_pop <- 247
+
+prob_1_sim <- mean(muestra_final_1 < mu_pop)
+prob_2_sim <- mean(muestra_final_2 < mu_pop)
+
+prob_1_an <- pnorm(mu_pop, mean = mu_1, sd = sigma_1)
+prob_2_an <- pnorm(mu_pop, mean = mu_2, sd = sigma_2)
+
+cat("Clase 1:\n")
+cat("  Probabilidad simulada : ", sprintf("%.5f", prob_1_sim), "\n")
+cat("  Probabilidad analítica: ", sprintf("%.5f", prob_1_an), "\n\n")
+
+cat("Clase 2:\n")
+cat("  Probabilidad simulada : ", sprintf("%.5f", prob_2_sim), "\n")
+cat("  Probabilidad analítica: ", sprintf("%.5f", prob_2_an), "\n")
+
+```
+De nuevo el grado de similitud es casi perfecto entre lo simulado y lo obtenido analíticamente, pues el tamaño muestral es muy grande.  
+
+
 :::
 
 ## Reflexión sobre el método de Monte Carlo
@@ -193,6 +307,7 @@ Obtén los resultados analíticos con las funciones `qnorm()` y `pnorm()`, y com
 -   ¿Qué opinas del método de Monte Carlo? ¿Te resulta fácil o difícil de aplicar? ¿Qué consideras que aporta respecto de obtener los parámetros de los modelos aplicando las fórmulas analíticas?
 
 ::: {#respuesta-7 .callout-note}
+Permite replicar con alta precisión los resultados analíticos. No resulta trivial pero creo que al practicarlo más puede ser relativamente fácil. Aunque algo que no entiendo es que para simular se necesita de cualquier forma la media que obtuvimos analíticamente, entonces es necesario ese paso y por lo tanto no entiendo bien lo que nos estamos ahorrando en este caso. 
 :::
 
 ## Inferencia con funciones derivadas
