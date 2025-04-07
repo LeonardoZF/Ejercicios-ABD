@@ -317,6 +317,12 @@ Permite replicar con alta precisión los resultados analíticos. No resulta triv
 -   Calcula la probabilidad de que la media de la segunda clase sea superior a la media de la primera clase usando el método de Monte Carlo. ¿Cómo lo harías usando la fórmula analítica? ¿Es más fácil o más difícil?
 
 ::: {#respuesta-8 .callout-note}
+```{r}
+prob_MC <- mean(muestra_final_2 > muestra_final_1)
+print(prob_MC)
+```
+Analíticamente no tengo claro cómo lo haría pero investigando un poco parece que se tendría algo de la forma:
+$(\mu_2 - \mu_1) \sim \mathcal{N}(\mu_2 - \mu_1,\; \sigma_1^2 + \sigma_2^2)$. La probabilidad que se estaría buscando es $P(\mu_2 > \mu_1)$, que es lo mismo que $P(\mu_2-\mu_1 >0)$. Dado que la distribución normal es simétrica, se podría obtener dicha probabilidad mediante la función de distribución acumulada: $1-P(\mu_2-\mu_1 \leq 0)$ que se podría probablemente transformar a puntuaciones z y hacer uso de valores ya establecidos (por ejemplo en tablas). Para esto habría que integrar en el intervalo correspondiente, lo cual analíticamente sería más complicado que simplemente calcular la media de la desiguadldad en las muestras simuladas. 
 :::
 
 ### Pregunta 9
@@ -324,6 +330,14 @@ Permite replicar con alta precisión los resultados analíticos. No resulta triv
 -   Las muestras obtenidas para distribución posterior de la media de cada una de las dos clases son independientes. Por lo tanto, debería dar igual en qué orden se hayan muestreado. Utilizando `sample(_vector_)` podemos obtener los valores aleatorizado del vector en un objeto `_vector_`. Comprueba si se cumple que podemos aleatorizar las muestras de una (o ambas) distribuciones posteriores, y que la probabilidad de que las dos clases sean diferentes aún así no cambie.
 
 ::: {#respuesta-9 .callout-note}
+```{r}
+set.seed(20250318)
+muestra_1_aleatoria <- sample(muestra_final_1)
+muestra_2_aleatoria <- sample(muestra_final_2)
+prob_MC_bis <- mean(muestra_2_aleatoria > muestra_1_aleatoria)
+print(prob_MC_bis)
+```
+Sí se cumple que, a pesar de aleatorizar ambas muestras, la probabilidad calculada previamente no cambia.
 :::
 
 ## Estimador máximo posterior
@@ -379,6 +393,30 @@ El estimador MAP es `{r} moda`, siendo su densidad `{r} densidad_max`.
 -   Utilizando las muestras posteriores obtenidas en la pregunta 5, calcula los estimadores MAP para las dos clases, y compáralos con los que obtendrías con las fómulas analíticas.
 
 ::: {#respuesta-10 .callout-note}
+```{r}
+# Calcular densidad suavizada de las muestras simuladas
+densidad_1 <- density(muestra_final_1)
+densidad_2 <- density(muestra_final_2)
+
+densidad_clase_1 <- tibble(
+  x        = densidad_1$x,
+  densidad = densidad_1$y
+)
+densidad_clase_2 <- tibble(
+  x        = densidad_2$x,
+  densidad = densidad_2$y
+)
+
+# Obtener modas (estimadores MAP)
+map_1 <- densidad_clase_1 %>% slice(which.max(densidad))
+moda_1 <- map_1 %>% pull(x)
+print(moda_1)
+map_2 <- densidad_clase_2 %>% slice(which.max(densidad))
+moda_2 <- map_2 %>% pull(x)
+print(moda_2)
+
+```
+Los valores son prácticamente iguales a los que se obtuvieron previamente analíticamente (234.81 y 222.5, respectivamente).
 :::
 
 # Ejercicio 2: Distribuciones Gamma
