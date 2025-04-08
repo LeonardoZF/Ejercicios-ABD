@@ -322,7 +322,7 @@ prob_MC <- mean(muestra_final_2 > muestra_final_1)
 print(prob_MC)
 ```
 Analíticamente no tengo claro cómo lo haría pero investigando un poco parece que se tendría algo de la forma:
-$(\mu_2 - \mu_1) \sim \mathcal{N}(\mu_2 - \mu_1,\; \sigma_1^2 + \sigma_2^2)$. La probabilidad que se estaría buscando es $P(\mu_2 > \mu_1)$, que es lo mismo que $P(\mu_2-\mu_1 >0)$. Dado que la distribución normal es simétrica, se podría obtener dicha probabilidad mediante la función de distribución acumulada: $1-P(\mu_2-\mu_1 \leq 0)$ que se podría probablemente transformar a puntuaciones z y hacer uso de valores ya establecidos (por ejemplo en tablas). Para esto habría que integrar en el intervalo correspondiente, lo cual analíticamente sería más complicado que simplemente calcular la media de la desiguadldad en las muestras simuladas. 
+$(\mu_2 - \mu_1) \sim \mathcal{N}(\mu_2 - \mu_1,\; \sigma_1^2 + \sigma_2^2)$. La probabilidad que se estaría buscando es $P(\mu_2 > \mu_1)$, que es lo mismo que $P(\mu_2-\mu_1 >0)$. Dado que la distribución normal es simétrica, se podría obtener dicha probabilidad mediante la función de distribución acumulada: $1-P(\mu_2-\mu_1 \leq 0)$ que se podría transformar a puntuaciones z y hacer uso de valores ya establecidos (por ejemplo en tablas o en R). Para esto habría que integrar en el intervalo correspondiente, lo cual analíticamente sería más complicado que simplemente calcular la media de la desiguadldad en las muestras simuladas. 
 :::
 
 ### Pregunta 9
@@ -441,6 +441,35 @@ La distribución Gamma está implementada en R mediante la familia de funciones 
 -   Utilizando un eje horizontal con precisión de .002, representa las dos distribuciones. Determina los límites del eje horizontal según tu propio criterio. Sin ver la forma de la función de densidad, ¿podrías deducir cuál habría de ser alguno de los dos límites del intervalo?
 
 ::: {#respuesta-11 .callout-note}
+Sí se podría deducir, por ejemplo mediante la desigualdad de Chebyshev, que permite establecer un intervalo en el que al menos X% de la distribución está contenida. Esta desigualdad únicamente hace uso de la media y desviación estándar de la distribución sin asumir nada sobre la forma de ésta. 
+```{r}
+# Definir eje con precisión de 0.002
+x <- seq(1.0, 2.5, by = 0.002)
+
+# Calcular densidades gamma
+gamma_sin <- dgamma(x, shape = 219, rate = 112)
+gamma_con <- dgamma(x, shape = 68, rate = 45)
+
+
+# Crear tibble con dos columnas de densidades gamma
+gamma_ambas <- tibble(
+  x = x,
+  Sin_título  = dgamma(x, shape = 219, rate = 112),
+  Con_título  = dgamma(x, shape = 68,  rate = 45))
+
+#Cambiar a formato long
+gamma_ambas <- gamma_ambas %>%
+  pivot_longer(cols = -x, #toma todas las columnas excepto x para hacer el pivot
+               names_to = "grupo", 
+               values_to = "densidad") 
+
+ggplot(gamma_ambas, aes(x = x, y = densidad, color = grupo)) +
+  geom_line() +
+  labs(x = expression(theta),y = "Densidad") +
+  theme_minimal()
+
+```
+
 :::
 
 ### Pregunta 12
