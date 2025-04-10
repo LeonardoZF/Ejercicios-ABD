@@ -103,16 +103,10 @@ $$
 -   Utilizando la expresión analítica del modelo, obtén la expresión analítica de la distribución posterior de la media para cada una de las dos clases, con 2 decimales.
 
 ::: {#respuesta-1 .callout-note}
-Para la clase 1 tenemos que $$\bar{y}_{1} = `r mean(clase_1$tiempo)`$$ y $$\sigma_{1}^2 = `r ceiling(var(clase_1$tiempo))`$$
-Entonces al sustituir en la fórmula de la media posterior se obtiene: $$\mu_\_{post_1} = \frac{(2073) (247) + (27) (1156) (234)}{(2073) + (27) 1156} = 234.81$$
-Sustituyendo para obtener la varianza posterior se tiene lo siguiente: $$\sigma^2\_{post_1} = \frac{(2073) (1156)}{(2073) + (27) (1156)} = 71.98$$
-La distribución posterior para la clase 1 es: $$p(\mu | y_1) = N(234.81, 71.98)$$
+Para la clase 1 tenemos que $$\bar{y}_{1} = `r mean(clase_1$tiempo)`$$ y $$\sigma_{1}^2 = `r ceiling(var(clase_1$tiempo))`$$ Entonces al sustituir en la fórmula de la media posterior se obtiene: $$\mu_\_{post_1} = \frac{(2073) (247) + (27) (1156) (234)}{(2073) + (27) 1156} = 234.81$$ Sustituyendo para obtener la varianza posterior se tiene lo siguiente: $$\sigma^2\_{post_1} = \frac{(2073) (1156)}{(2073) + (27) (1156)} = 71.98$$ La distribución posterior para la clase 1 es: $$p(\mu | y_1) = N(234.81, 71.98)$$
 
 Para la clase 2 se procede análogamente: tenemos que $$\bar{y}_{2} = `r ceiling(mean(clase_2$tiempo))`$$ y $$\sigma_{2}^2 = `r ceiling(var(clase_2$tiempo))`$$.
-Al sustituir en la fórmula de la media posterior se obtiene:
-$$\mu_\_{post_2} = \frac{(1695)(247) + (24)(1156)(221)}{1695 + (24)(1156)} = 222.5$$
-La varianza posterior se obtiene al sustituir: $$\sigma^2_{post_2} = \frac{(1695)(1156)}{1695 + (24)( 1156)} = 66.56$$
-La distribución posterior para la clase 2 es: $$p(\mu | y_2) = N(222.5, 66.56)$$
+Al sustituir en la fórmula de la media posterior se obtiene: $$\mu_\_{post_2} = \frac{(1695)(247) + (24)(1156)(221)}{1695 + (24)(1156)} = 222.5$$ La varianza posterior se obtiene al sustituir: $$\sigma^2_{post_2} = \frac{(1695)(1156)}{1695 + (24)( 1156)} = 66.56$$ La distribución posterior para la clase 2 es: $$p(\mu | y_2) = N(222.5, 66.56)$$
 :::
 
 ## Simulación de Monte Carlo
@@ -149,11 +143,12 @@ media_1 <- mean(muestra_1)
 varianza_1 <- var(muestra_1)
 media_2 <- mean(muestra_2)
 varianza_2 <- var(muestra_2)
-cat("Media 1:", sprintf("%.2f",media_1), "\n",
-    "Varianza 1:", sprintf("%.2f",varianza_1), "\n",
-    "Media 2:", sprintf("%.2f",media_2), "\n",
-    "Varianza 2:", sprintf("%.2f",varianza_2), "\n")
+cat(" Media 1:", sprintf("%.2f",media_1), "\n",
+    " Varianza 1:", sprintf("%.2f",varianza_1), "\n",
+    " Media 2:", sprintf("%.2f",media_2), "\n",
+    " Varianza 2:", sprintf("%.2f",varianza_2), "\n")
 ```
+
 Las medias son prácticamente iguales pero las varianzas sí difieren un tanto, sobre todo para la muestra 1.
 :::
 
@@ -164,8 +159,9 @@ Las medias son prácticamente iguales pero las varianzas sí difieren un tanto, 
 -   Calcula el error estándar de Monte Carlo de las medias estimadas por el método de Monte Carlo [@hoff2009, p. 56], y su intervalo al 95% de confianza (p. 57). Asume que las varianzas verdaderas son desconocidas (i.e., utiliza las varianzas obtenidas por el método de Monte Carlo). ¿Cuál es la amplitud de los intervalos? Comprueba si los valores reales (obtenidos analíticamente) están comprendidos en los intervalos
 
 ::: {#respuesta-4 .callout-note}
-Para obtener el error estándar se aplica la fórmula $$SE=\sqrt \frac{\hat{\sigma}^2}{S}$$, siendo $\hat{\sigma}^2$ la varianza que calculamos en los pasos previos de las muestras simuladas y $S$ el tamaño de la muestra (500).
+Para obtener el error estándar se aplica la fórmula $SE=\sqrt \frac{\hat{\sigma}^2}{S}$, siendo $\hat{\sigma}^2$ la varianza que calculamos en los pasos previos de las muestras simuladas y $S$ el tamaño de la muestra (500).
 Entonces los errores estándar para ambas, y sus respectivos intervalos de confianza con amplitud son:
+
 ```{r, echo=FALSE}
 S <- 500
 se_1 <- sqrt(varianza_1 / S)
@@ -184,6 +180,7 @@ cat("  SE:", sprintf("%.4f", se_2), "\n")
 cat("  IC 95% media:", sprintf("%.2f", ic_2[1]), "a", sprintf("%.2f", ic_2[2]), "\n")
 cat("  Amplitud del intervalo:", sprintf("%.2f", ic_2[2]-ic_2[1]))
 ```
+
 Ambos valores de las medias obtenidos analíticamente (234.81 y 222.5) se encuentran en los respectivos intervalos.
 :::
 
@@ -192,12 +189,11 @@ Ambos valores de las medias obtenidos analíticamente (234.81 y 222.5) se encuen
 -   En base a las varianzas obtenidas por el método de Monte Carlo, determina el tamaño muestral de la distribución posterior necesario para alcanzar una precisión de 2 decimales en la estimación de la media de las distribuciones posteriores [@hoff2009, p. 56 ---vas a tener que "despejar" el tamaño de la muestra simulada]. Utiliza el valor mayor de ambas distribuciones para volver a calcular las medias, y comprueba si se alcanza la precisión esperada.
 
 ::: {#respuesta-5 .callout-note}
-Para alcanzar una precisión de 2 decimales en la estimación de la media de las distribuciones posteriores se requiere que el intervalo completo esté contenido dentro de una centésima (0.01). Es decir, se necesita $2 \cdot \sqrt{ \frac{ \hat{\sigma}^2 }{S} } < 0.01$. Se despeja entonces el tamaño muestral $S$:
-$$\sqrt{ \frac{ \hat{\sigma}^2 }{S}} < \frac{0.01}{2} \iff \frac{\hat{\sigma}^2 }{S} < (0.005)^2 = 0.000025$$
-Finalmente, se obtiene el valor requerido de $S$:
-$$ S > \frac{ \hat{\sigma}^2 }{0.000025} = \frac{`r max(varianza_1, varianza_2)`}{0.000025}=`r max(varianza_1, varianza_2) / 0.000025`$$
-Ahora, para comprobar que sí hay ese grado de precisión, se simula una nueva muestra con tamaño muestral $S$:
-```{r, echo=FALSE}
+Para alcanzar una precisión de 2 decimales en la estimación de la media de las distribuciones posteriores se requiere que el intervalo completo esté contenido dentro de una centésima (0.01).
+Es decir, se necesita $2 \cdot \sqrt{ \frac{ \hat{\sigma}^2 }{S} } < 0.01$.
+Se despeja entonces el tamaño muestral $S$: $$\sqrt{ \frac{ \hat{\sigma}^2 }{S}} < \frac{0.01}{2} \iff \frac{\hat{\sigma}^2 }{S} < (0.005)^2 = 0.000025$$ Finalmente, se obtiene el valor requerido de $S$: $$ S > \frac{ \hat{\sigma}^2 }{0.000025} = \frac{`r max(varianza_1, varianza_2)`}{0.000025}=`r max(varianza_1, varianza_2) / 0.000025`$$ Ahora, para comprobar que sí hay ese grado de precisión, se simula una nueva muestra con tamaño muestral mayor estricto que $S$:
+
+```{r}
 set.seed(20250318)
 S <- ceiling(max(varianza_1, varianza_2) / 0.000025)
 muestra_final_1 <- rnorm(S, mean = 234.81, sd = sqrt(max(varianza_1, varianza_2)))
@@ -205,18 +201,27 @@ media_final_1 <- mean(muestra_final_1)
 se_final_1 <- sqrt(var(muestra_final_1) / S)
 ic_final_1 <- c(media_final_1 - 2 * se_final_1, media_final_1 + 2 * se_final_1)
 amplitud_ic_final_1 <- ic_final_1[2] - ic_final_1[1]
-cat("IC 95% (muestra 1):", sprintf("%.4f", ic_final_1[1]), "a", sprintf("%.4f", ic_final_1[2]), "\n")
 
 muestra_final_2 <- rnorm(S, mean = 222.5, sd = sqrt(max(varianza_1, varianza_2)))
 media_final_2 <- mean(muestra_final_2)
 se_final_2 <- sqrt(var(muestra_final_2) / S)
 ic_final_2 <- c(media_final_2 - 2 * se_final_2, media_final_2 + 2 * se_final_2)
 amplitud_ic_final_2 <- ic_final_2[2] - ic_final_2[1]
-cat("IC 95% (muestra 2):", sprintf("%.4f", ic_final_2[1]), "a", sprintf("%.4f", ic_final_2[2]), "\n")
-```
-La amplitud del intervalo de confianza pra la muestra 1 es de `r amplitud_ic_final_1` y tenemos que $SE = `r se_final_1`$; dado que el intervalo se construye como $\mu \pm 2\cdot SE$ entonces sí tenemos la precisión requerida (en este caso < 0.01).
 
-Para la muestra 2 tenemos también una amplitud de `r amplitud_ic_final_2` y un $SE = `r se_final_2`$, por lo que sí tenemos la precisión requerida (< 0.01).
+cat("IC 95% (muestra 1):",
+    sprintf("%.4f", ic_final_1[1]), "a", 
+    sprintf("%.4f", ic_final_1[2]), "\n")
+cat("IC 95% (muestra 2):", 
+    sprintf("%.4f", ic_final_2[1]), "a", 
+    sprintf("%.4f", ic_final_2[2]), "\n")
+```
+
+Las amplitudes de los intervalos de credibilidad para ambas muestras es de 0.02.
+Dado que el intervalo se construye como $\hat{\theta} \pm 2 \cdot SE$, entonces la amplitud total del intervalo es $2 \cdot 2 \cdot SE = 4 \cdot SE$.
+
+Por lo tanto, con la amplitud observada se tiene que $0.02 = 4 \cdot SE \iff SE =\frac{0.02}{4} = 0.005$.
+
+Esto implica que el margen de error (distancia desde el parámetro hasta el límite del intervalo) en la estimación de la media es $2 \cdot SE = 2 \cdot 0.005 = 0.01$, lo cual satisface la precisión requerida de 2 decimales.
 :::
 
 ## Inferencia de intervalos y probabilidades
@@ -235,11 +240,8 @@ Obtén los resultados analíticos con las funciones `qnorm()` y `pnorm()`, y com
 
 ::: {#respuesta-6 .callout-note}
 Primero calculo los intervalos de credibilidad del 99%:
-```{r, echo=FALSE}
-#IC 99% de las muestras simuladas
-ic_99_1_sim <- quantile(muestra_final_1, probs = c(0.005, 0.995))
-ic_99_2_sim <- quantile(muestra_final_2, probs = c(0.005, 0.995))
 
+```{r, echo=FALSE}
 #Medias y desviaciones estándar de las distribuciones posteriores
 mu_1 <- 234.81
 mu_2 <- 222.5
@@ -250,54 +252,81 @@ sigma_2 <- sqrt(varianza_2)
 ic_99_1_an <- qnorm(c(0.005, 0.995), mean = mu_1, sd = sigma_1)
 ic_99_2_an <- qnorm(c(0.005, 0.995), mean = mu_2, sd = sigma_2)
 
+#IC 99% de las muestras simuladas
+ic_99_1_sim <- quantile(muestra_final_1, probs = c(0.005, 0.995))
+ic_99_2_sim <- quantile(muestra_final_2, probs = c(0.005, 0.995))
+
 cat("Clase 1:\n")
-cat("  IC 99% simulado: ", sprintf("%.4f",ic_99_1_sim), "\n")
-cat("  IC 99% analítico:", sprintf("%.4f",ic_99_1_an), "\n\n")
+cat("  IC 99% analítico:", 
+    sprintf("%.4f",ic_99_1_an[1]), "a", 
+    sprintf("%.4f",ic_99_1_an[2]), "\n")
+cat("  IC 99% analítico:", 
+    sprintf("%.4f",ic_99_1_sim[1]), "a", 
+    sprintf("%.4f",ic_99_1_sim[2]), "\n")
 
 cat("Clase 2:\n")
-cat("  IC 99% simulado: ", sprintf("%.4f",ic_99_2_sim), "\n")
-cat("  IC 99% analítico:", sprintf("%.4f",ic_99_2_an), "\n\n")
+cat("  IC 99% analítico:", 
+    sprintf("%.4f",ic_99_2_an[1]), "a", 
+    sprintf("%.4f",ic_99_2_an[2]), "\n")
+cat("  IC 99% analítico:", 
+    sprintf("%.4f",ic_99_2_sim[1]), "a",
+    sprintf("%.4f",ic_99_2_sim[2]), "\n")
 ```
-Para la clase 1 son prácticamente iguales pero para la clase 2 hay un poco de diferencia. 
-Ahora se calculan los cuartiles siguiendo el mismo proceso (comparando resultados simulados y analíticos):
-```{r, echo=FALSE}
-cuartiles_1_sim <- quantile(muestra_final_1, probs = c(0.25, 0.5, 0.75))
-cuartiles_2_sim <- quantile(muestra_final_2, probs = c(0.25, 0.5, 0.75))
 
+Para la clase 1 son prácticamente iguales pero para la clase 2 hay un poco de diferencia.
+Ahora se calculan los cuartiles siguiendo el mismo proceso (comparando resultados analíticos y simulados):
+
+```{r, echo=FALSE}
 cuartiles_1_an <- qnorm(c(0.25, 0.5, 0.75), mean = mu_1, sd = sigma_1)
 cuartiles_2_an <- qnorm(c(0.25, 0.5, 0.75), mean = mu_2, sd = sigma_2)
 
+cuartiles_1_sim <- quantile(muestra_final_1, probs = c(0.25, 0.5, 0.75))
+cuartiles_2_sim <- quantile(muestra_final_2, probs = c(0.25, 0.5, 0.75))
+
 cat("Clase 1:\n")
-cat("  Cuartiles simulados : ", sprintf("%.4f", cuartiles_1_sim), "\n")
-cat("  Cuartiles analíticos: ", sprintf("%.4f", cuartiles_1_an), "\n\n")
+cat("  Cuartiles analíticos: ",
+    "Q1 =", sprintf("%.4f", cuartiles_1_an[1]), ", ",
+    "Q2 =", sprintf("%.4f", cuartiles_1_an[2]), ", ",
+    "Q3 =", sprintf("%.4f", cuartiles_1_an[3]), "\n")
+cat("  Cuartiles simulados : ",
+    "Q1 =", sprintf("%.4f", cuartiles_1_sim[1]), ", ",
+    "Q2 =", sprintf("%.4f", cuartiles_1_sim[2]), ", ",
+    "Q3 =", sprintf("%.4f", cuartiles_1_sim[3]), "\n\n")
 
 cat("Clase 2:\n")
-cat("  Cuartiles simulados : ", sprintf("%.4f", cuartiles_2_sim), "\n")
-cat("  Cuartiles analíticos: ", sprintf("%.4f", cuartiles_2_an), "\n")
+cat("  Cuartiles analíticos: ",
+    "Q1 =", sprintf("%.4f", cuartiles_2_an[1]), ", ",
+    "Q2 =", sprintf("%.4f", cuartiles_2_an[2]), ", ",
+    "Q3 =", sprintf("%.4f", cuartiles_2_an[3]), "\n")
+cat("  Cuartiles simulados : ",
+    "Q1 =", sprintf("%.4f", cuartiles_2_sim[1]), ", ",
+    "Q2 =", sprintf("%.4f", cuartiles_2_sim[2]), ", ",
+    "Q3 =", sprintf("%.4f", cuartiles_2_sim[3]), "\n")
 ```
-Aquí el grado de similitud es casi perfecto. 
+
+Aquí el grado de similitud es casi perfecto.
+
 Finalmente, se calculan las probabilidades de cada clase de tener una media menor a la de la población con base en lo simulado y en lo obtenido analíticamente:
+
 ```{r, echo=FALSE}
 mu_pop <- 247
-
-prob_1_sim <- mean(muestra_final_1 < mu_pop)
-prob_2_sim <- mean(muestra_final_2 < mu_pop)
 
 prob_1_an <- pnorm(mu_pop, mean = mu_1, sd = sigma_1)
 prob_2_an <- pnorm(mu_pop, mean = mu_2, sd = sigma_2)
 
+prob_1_sim <- mean(muestra_final_1 < mu_pop)
+prob_2_sim <- mean(muestra_final_2 < mu_pop)
+
 cat("Clase 1:\n")
+cat("  Probabilidad analítica: ", sprintf("%.5f", prob_1_an), "\n")
 cat("  Probabilidad simulada : ", sprintf("%.5f", prob_1_sim), "\n")
-cat("  Probabilidad analítica: ", sprintf("%.5f", prob_1_an), "\n\n")
 
 cat("Clase 2:\n")
-cat("  Probabilidad simulada : ", sprintf("%.5f", prob_2_sim), "\n")
 cat("  Probabilidad analítica: ", sprintf("%.5f", prob_2_an), "\n")
-
+cat("  Probabilidad simulada : ", sprintf("%.5f", prob_2_sim), "\n")
 ```
-De nuevo el grado de similitud es casi perfecto entre lo simulado y lo obtenido analíticamente, pues el tamaño muestral es muy grande.  
 
-
+De nuevo el grado de similitud es casi perfecto entre lo simulado y lo obtenido analíticamente, pues el tamaño muestral es muy grande.
 :::
 
 ## Reflexión sobre el método de Monte Carlo
@@ -307,7 +336,9 @@ De nuevo el grado de similitud es casi perfecto entre lo simulado y lo obtenido 
 -   ¿Qué opinas del método de Monte Carlo? ¿Te resulta fácil o difícil de aplicar? ¿Qué consideras que aporta respecto de obtener los parámetros de los modelos aplicando las fórmulas analíticas?
 
 ::: {#respuesta-7 .callout-note}
-Permite replicar con alta precisión los resultados analíticos. No resulta trivial pero creo que al practicarlo más puede ser relativamente fácil. Aunque algo que no entiendo es que para simular se necesita de cualquier forma la media que obtuvimos analíticamente, entonces es necesario ese paso y por lo tanto no entiendo bien lo que nos estamos ahorrando en este caso. 
+Permite replicar con alta precisión los resultados analíticos.
+No resulta trivial pero creo que al practicarlo más puede ser relativamente fácil.
+Aunque algo que no entiendo es que para simular se necesita inicialmente de cualquier forma la media que obtuvimos analíticamente, por lo tanto no entiendo bien lo que nos estamos ahorrando en este caso.
 :::
 
 ## Inferencia con funciones derivadas
@@ -321,8 +352,11 @@ Permite replicar con alta precisión los resultados analíticos. No resulta triv
 prob_MC <- mean(muestra_final_2 > muestra_final_1)
 print(prob_MC)
 ```
-Analíticamente no tengo claro cómo lo haría pero investigando un poco parece que se tendría algo de la forma:
-$(\mu_2 - \mu_1) \sim \mathcal{N}(\mu_2 - \mu_1,\; \sigma_1^2 + \sigma_2^2)$. La probabilidad que se estaría buscando es $P(\mu_2 > \mu_1)$, que es lo mismo que $P(\mu_2-\mu_1 >0)$. Dado que la distribución normal es simétrica, se podría obtener dicha probabilidad mediante la función de distribución acumulada: $1-P(\mu_2-\mu_1 \leq 0)$ que se podría transformar a puntuaciones z y hacer uso de valores ya establecidos (por ejemplo en tablas o en R). Para esto habría que integrar en el intervalo correspondiente, lo cual analíticamente sería más complicado que simplemente calcular la media de la desiguadldad en las muestras simuladas. 
+
+Analíticamente no tengo claro cómo lo haría pero investigando un poco parece que se tendría algo de la forma: $(\mu_2 - \mu_1) \sim \mathcal{N}(\mu_2 - \mu_1,\; \sigma_1^2 + \sigma_2^2)$.
+La probabilidad que se estaría buscando es $P(\mu_2 > \mu_1)$, que es lo mismo que $P(\mu_2-\mu_1 >0)$.
+Dado que la distribución normal es simétrica, se podría obtener dicha probabilidad mediante la función de distribución acumulada: $1-P(\mu_2-\mu_1 \leq 0)$ que se podría transformar a puntuaciones z y hacer uso de valores ya establecidos (por ejemplo en tablas o en R).
+Para esto habría que integrar en el intervalo correspondiente, lo cual analíticamente sería más complicado que simplemente calcular la media de la desiguadldad en las muestras simuladas.
 :::
 
 ### Pregunta 9
@@ -337,6 +371,7 @@ muestra_2_aleatoria <- sample(muestra_final_2)
 prob_MC_bis <- mean(muestra_2_aleatoria > muestra_1_aleatoria)
 print(prob_MC_bis)
 ```
+
 Sí se cumple que, a pesar de aleatorizar ambas muestras, la probabilidad calculada previamente no cambia.
 :::
 
@@ -367,20 +402,20 @@ muestras_norm <- rnorm(N_MC) # Simulamos las muestras de la distribución
 
 densidad_norm <- density(muestras_norm) # `density()` aplica el "suavizado"
 
-# Convertimos la densidad en un "tibble" para manejarla más fácilmente 
+#Convertimos la densidad en un "tibble" para manejarla más fácilmente 
 densidad_normal <- tibble(
   x        = densidad_norm$x, # `x` == variable aleatoria
   densidad = densidad_norm$y
 )
 
-# Podemos representar la densidad gráficamente, junto con la curva normal:
+#Podemos representar la densidad gráficamente, junto con la curva normal:
 densidad_normal |>
   mutate(dens_analitica = dnorm(x)) |>
   ggplot(aes(x, densidad)) +
   geom_line(color = color_defecto) +
   geom_line(aes(y = dens_analitica), color = PALETA[2])
 
-# Obtenemos el valor de la moda:
+#Obtenemos el valor de la moda:
 estimador_map <- densidad_normal |> slice(which.max(densidad))
 densidad_max  <- estimador_map |> pull(densidad)
 moda          <- estimador_map |> pull(x)
@@ -394,7 +429,7 @@ El estimador MAP es `{r} moda`, siendo su densidad `{r} densidad_max`.
 
 ::: {#respuesta-10 .callout-note}
 ```{r}
-# Calcular densidad suavizada de las muestras simuladas
+#Calcular densidad suavizada de las muestras simuladas
 densidad_1 <- density(muestra_final_1)
 densidad_2 <- density(muestra_final_2)
 
@@ -407,7 +442,7 @@ densidad_clase_2 <- tibble(
   densidad = densidad_2$y
 )
 
-# Obtener modas (estimadores MAP)
+#Obtener modas (estimadores MAP)
 map_1 <- densidad_clase_1 %>% slice(which.max(densidad))
 moda_1 <- map_1 %>% pull(x)
 print(moda_1)
@@ -416,6 +451,7 @@ moda_2 <- map_2 %>% pull(x)
 print(moda_2)
 
 ```
+
 Los valores son prácticamente iguales a los que se obtuvieron previamente analíticamente (234.81 y 222.5, respectivamente).
 :::
 
@@ -441,17 +477,19 @@ La distribución Gamma está implementada en R mediante la familia de funciones 
 -   Utilizando un eje horizontal con precisión de .002, representa las dos distribuciones. Determina los límites del eje horizontal según tu propio criterio. Sin ver la forma de la función de densidad, ¿podrías deducir cuál habría de ser alguno de los dos límites del intervalo?
 
 ::: {#respuesta-11 .callout-note}
-Sí se podría deducir, por ejemplo mediante la desigualdad de Chebyshev, que permite establecer un intervalo en el que al menos X% de la distribución está contenida. Esta desigualdad únicamente hace uso de la media y desviación estándar de la distribución sin asumir nada sobre la forma de ésta. 
+Sí se podría deducir, por ejemplo mediante la desigualdad de Chebyshev, que permite establecer un intervalo en el que al menos X% de la distribución está contenida.
+Esta desigualdad únicamente hace uso de la media y desviación estándar de la distribución sin asumir nada sobre la forma de ésta.
+
 ```{r}
-# Definir eje con precisión de 0.002
+#Definir eje con precisión de 0.002
 x <- seq(1.0, 2.5, by = 0.002)
 
-# Calcular densidades gamma
+#Calcular densidades gamma
 gamma_sin <- dgamma(x, shape = 219, rate = 112)
 gamma_con <- dgamma(x, shape = 68, rate = 45)
 
 
-# Crear tibble con dos columnas de densidades gamma
+#Crear tibble con dos columnas de densidades gamma
 gamma_ambas <- tibble(
   x = x,
   Sin_título  = dgamma(x, shape = 219, rate = 112),
@@ -465,11 +503,10 @@ gamma_ambas <- gamma_ambas %>%
 
 ggplot(gamma_ambas, aes(x = x, y = densidad, color = grupo)) +
   geom_line() +
-  labs(x = expression(theta),y = "Densidad") +
+  labs(x =  expression("Tasa de fertilidad " * theta),y = "Densidad") +
   theme_minimal()
 
 ```
-
 :::
 
 ### Pregunta 12
@@ -477,6 +514,81 @@ ggplot(gamma_ambas, aes(x = x, y = densidad, color = grupo)) +
 -   Determina la probabilidad de que las mujeres de 40 años sin título universitario en los 90 en EEUU tuvieran una tasa de fertilidad superior a la de las mujeres con título universitario. Utiliza el método de Monte Carlo con 3 decimales de precisión al 99% de confianza, justificando el tamaño muestral elegido para aproximar las distribuciones posteriores (usa la media para justificar esta precisión). Si lo necesitas, revisa el material complementario del Tema 3 para determinar la varianza de la distribución Gamma.
 
 ::: {#respuesta-12 .callout-note}
-:::
+Para alcanzar una precisión de 3 decimales en la estimación de la media de las distribuciones posteriores se requiere que el intervalo completo esté contenido dentro de una milésima (0.001) con 99% de confianza.
 
+Es decir, se necesita:
+$2.576 \cdot \sqrt{ \frac{ \text{Var}(\theta) }{S} } < 0.001$
+```{r, echo=FALSE}
+z <- 2.576
+prec <- 0.001
+```
+
+
+Se despeja entonces el tamaño muestral $S$:
+
+$$\sqrt{ \frac{ \text{Var}(\theta) }{S}} < \frac{`r prec`}{`r z`} \iff \frac{\text{Var}(\theta) }{S} < `r (prec/z)^2`$$
+Finalmente, para obtener el valor requerido de $S$ se necesita el máximo de las varianzas de las distribuciones posteriores. Entonces hay que aplicar la fórmula de varianza para distribuciones Gamma: $\text{Var}(\theta) = \frac{\alpha}{\beta^2}$.
+
+```{r, echo=FALSE}
+#Parámetros de distribuciones Gamma
+alpha_sin <- 219
+beta_sin <- 112
+alpha_con <- 68
+beta_con <- 45
+
+#Varianzas de cada distribución Gamma
+var_sin <- alpha_sin / beta_sin^2
+var_con <- alpha_con / beta_con^2
+var_max <- max(var_sin, var_con)
+```
+
+Para las mujeres sin título universitario, cuya distribución posterior es $\theta_{\text{sin}} \sim \text{Gamma}(219, 112)$, se tiene:
+$$\text{Var}(\theta_{\text{sin}}) = \frac{219}{112^2} = `r var_sin`$$
+Para las mujeres con título universitario, cuya distribución posterior es $\theta_{\text{con}} \sim \text{Gamma}(68, 45)$, se tiene:
+$$\text{Var}(\theta_{\text{con}}) = \frac{68}{45^2} = `r var_con`$$
+La varianza máxima entre ambas es `r var_max`, entonces regresamos a la fórmula para calcular el tamaño de la muestra:
+$$\frac{\text{Var}(\theta) }{S} < `r (prec/z)^2` \iff S > \frac{`r var_max`}{`r (prec/z)^2`} = `r var_max/((prec/z)^2)`$$
+Una vez obtenido el tamaño muestral mínimo para llegar a la precisión deseada, se hacen las simulaciones para cada una de las distribuciones Gamma, se estiman sus medias y los intervalos de credibilidad del 99%:
+
+```{r, echo=FALSE}
+set.seed(20250318)
+S <- ceiling(var_max / (prec / z)^2)
+
+#Simular muestras basándose en las distribuciones posteriores
+gamma_sin <- rgamma(S, shape = alpha_sin, rate = beta_sin)
+gamma_con <- rgamma(S, shape = alpha_con, rate = beta_con)
+
+#Estimar medias
+media_sin <- mean(gamma_sin)
+media_con <- mean(gamma_con)
+var_sin <- var(gamma_sin)
+var_con <- var(gamma_con)
+
+#Obtener errores estándar Monte Carlo
+se_sin <- sqrt(var_sin / S)
+se_con <- sqrt(var_con / S)
+
+#Calcular intervalos de credibilidad del 99% y amplitudes
+ic_sin <- c(media_sin - z * se_sin, media_sin + z * se_sin)
+ic_con <- c(media_con - z * se_con, media_con + z * se_con)
+amplitud_1 <- ic_sin[2] - ic_sin[1]
+amplitud_2 <- ic_con[2] - ic_con[1]
+
+cat("Media estimada (sin título):",
+    sprintf("%.4f", media_sin),
+    "| IC 99%:", sprintf("%.4f", ic_sin[1]), "a", sprintf("%.4f", ic_sin[2]),
+    "| Amplitud del IC:", sprintf("%.4f", amplitud_2),"\n")
+
+cat("Media estimada (con título):",
+    sprintf("%.4f", media_con),
+    "| IC 99%:", sprintf("%.4f", ic_con[1]), "a", sprintf("%.4f", ic_con[2]),
+    "| Amplitud del IC:", sprintf("%.4f", amplitud_1),"\n")
+```
+Finalmente, se puede estimar la probabilidad de que las mujeres sin título tengan una tasa de fertilidad superior a las mujeres con título mediante una aproximación con la proporción de veces en que esto ocurrió en las muestras simuladas:
+$$P(\theta_{\text{sin}} > \theta_{\text{con}}) \approx \frac{\text{Número de Simulaciones con } \theta_{\text{sin}} > \theta_{\text{con}}}{S}$$
+```{r, echo=FALSE}
+probabilidad_final <- mean(gamma_sin > gamma_con)
+```
+Este valor es `r sprintf("%.4f", probabilidad_final)`.
+:::
 # Referencias
