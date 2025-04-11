@@ -163,6 +163,15 @@ Calcula o comprueba las siguientes respuestas usando comandos de R:
 -   ¿Cuál es el valor máximo de la función de densidad de la distribución normal?
 
 ::: {#respuesta-1 .callout-note}
+```{r pregunta 1}
+resultado <- tibble(
+  variable = seq(from = -5, to = 5, by = 1e-6),
+  densidad = variable |> dnorm()
+)
+max_densidad <- max(resultado$densidad)
+```
+
+El valor máximo es `r max_densidad`
 :::
 
 ### Pregunta 2
@@ -170,6 +179,12 @@ Calcula o comprueba las siguientes respuestas usando comandos de R:
 -   ¿Para qué valor de la variable aleatoria se da? ¿Cómo llamarías a ese valor?
 
 ::: {#respuesta-2 .callout-note}
+```{r pregunta 2}
+pos_max <- which(resultado$densidad==max_densidad)
+valor <- resultado$variable[pos_max]
+```
+
+Para el valor `r valor`, que es la moda.
 :::
 
 ### Pregunta 3
@@ -177,6 +192,7 @@ Calcula o comprueba las siguientes respuestas usando comandos de R:
 -   El valor máximo, ¿puede ser mayor que 1? Justifica tu respuesta.
 
 ::: {#respuesta-3 .callout-note}
+Sí, lo que debe de ser máximo 1 es la integral de la función de densidad. 
 :::
 
 ### Pregunta 4
@@ -186,6 +202,20 @@ Calcula o comprueba las siguientes respuestas usando comandos de R:
 *(Ejecuta `?cumsum` para consultar la ayuda de esa función).*
 
 ::: {#respuesta-4 .callout-note}
+```{r pregunta 4}
+cdf <- pnorm(seq(from = -5, to = 5, by = PREC))
+
+# Crear un dataframe
+df <- tibble(x = seq(from = -5, to = 5, by = PREC), cdf = cdf)
+
+# Graficar la CDF
+ggplot(df, aes(x = x, y = cdf)) +
+  geom_line(color = "blue") +
+  labs(title = "Función de Distribución (CDF) de N(0,1)",
+       x = "x",
+       y = "F(x)") +
+  theme_minimal()
+```
 :::
 
 ### Pregunta 5
@@ -193,6 +223,12 @@ Calcula o comprueba las siguientes respuestas usando comandos de R:
 -   Calcula el valor esperado de la distribución normal.
 
 ::: {#respuesta-5 .callout-note}
+```{r pregunta 5}
+valor_esperado <- sum(resultado$variable * resultado$densidad * 1e-6)
+valor_esperado
+```
+
+Es prácticamente 0, que coincide con la media de la distribución.
 :::
 
 # Ejercicio 2
@@ -206,6 +242,18 @@ Calcula o comprueba las siguientes respuestas usando comandos de R:
 *(Si no sabes qué limites utilizar, consulta la ayuda de `dbeta()`).*
 
 ::: {#respuesta-6 .callout-note}
+```{r pregunta 6}
+x_vals <- seq(0, 1, by = 0.001)
+beta <- dbeta(x =x_vals ,shape1 = 1,shape2 = 1)
+#Dataframe para graficar
+df <- tibble(x = x_vals, densidad = beta)
+ggplot(df, aes(x=x,y=densidad))+
+  geom_line(color="blue")+
+  labs(title = "Distribución Beta(1,1)",
+       x = "x",
+       y = "Densidad f(x)") +
+  theme_minimal()
+```
 :::
 
 ### Pregunta 7
@@ -213,6 +261,7 @@ Calcula o comprueba las siguientes respuestas usando comandos de R:
 -   ¿Qué forma tiene?
 
 ::: {#respuesta-7 .callout-note}
+Es una línea recta de 0 a 1, como la uniforme (0,1).
 :::
 
 ## Parámetros de la distribución Beta
@@ -222,6 +271,23 @@ Calcula o comprueba las siguientes respuestas usando comandos de R:
 -   Prueba con diferentes valores de $\alpha$ y $\beta$.
 
 ::: {#respuesta-8 .callout-note}
+```{r}
+# Definir combinaciones de alpha y beta
+alpha_vals <- c(1,2,3,4,5)
+beta_vals <- c(1,2,3,4,5)
+
+df <- expand.grid(alpha = alpha_vals, beta = beta_vals, x = x_vals) %>%
+  mutate(densidad = dbeta(x, shape1 = alpha, shape2 = beta))
+
+ggplot(df, aes(x = x, y = densidad, color = factor(alpha))) +
+  geom_line() +
+  facet_grid(beta ~ alpha) +
+  labs(title = "Distribuciones Beta para distintas combinaciones de alpha y beta",
+       x = "x",
+       y = "Densidad f(x)",
+       color = "Alpha") +
+  theme_minimal()
+```
 :::
 
 ### Pregunta 9
@@ -229,6 +295,7 @@ Calcula o comprueba las siguientes respuestas usando comandos de R:
 -   ¿Qué ocurre a medida que van creciendo?
 
 ::: {#respuesta-9 .callout-note}
+Se van haciendo curvas hasta asemejar una distribución normal.
 :::
 
 ### Pregunta 10
@@ -236,6 +303,7 @@ Calcula o comprueba las siguientes respuestas usando comandos de R:
 -   ¿Qué ocurre cuando son iguales? ¿Y cuándo son distintos?
 
 ::: {#respuesta-10 .callout-note}
+Cuando alpha y beta son iguales se ven simétricas, mientras que se vuelven asimétricas cuando los parámetros son distintos.
 :::
 
 ### Pregunta 11
@@ -243,6 +311,24 @@ Calcula o comprueba las siguientes respuestas usando comandos de R:
 -   ¿Qué ocurre si tienen valores ligeramente superiores a 1?
 
 ::: {#respuesta-11 .callout-note}
+```{r pregunta 11}
+alpha_vals <- c(1.1,1.2,1.3,1.4,1.5)
+beta_vals <- c(1.1,1.2,1.3,1.4,1.5)
+
+df <- expand.grid(alpha = alpha_vals, beta = beta_vals, x = x_vals) %>%
+  mutate(densidad = dbeta(x, shape1 = alpha, shape2 = beta))
+
+ggplot(df, aes(x = x, y = densidad, color = factor(alpha))) +
+  geom_line() +
+  facet_grid(beta ~ alpha) +
+  labs(title = "Distribuciones Beta para distintas combinaciones de alpha y beta",
+       x = "x",
+       y = "Densidad f(x)",
+       color = "Alpha") +
+  theme_minimal()
+```
+
+Es como si la línea recta del caso beta(1,1) se doblara hacia abajo formando una curva en forma de U invertida.
 :::
 
 ### Pregunta 12
@@ -250,6 +336,25 @@ Calcula o comprueba las siguientes respuestas usando comandos de R:
 -   ¿Qué ocurre si tienen valores por debajo de 1?
 
 ::: {#respuesta-12 .callout-note}
+```{r}
+alpha_vals <- c(0.2,0.4,0.6,0.8,1)
+beta_vals <- c(0.2,0.4,0.6,0.8,1)
+
+df <- expand.grid(alpha = alpha_vals, beta = beta_vals, x = x_vals) %>%
+  mutate(densidad = dbeta(x, shape1 = alpha, shape2 = beta))
+
+ggplot(df, aes(x = x, y = densidad, color = factor(alpha))) +
+  geom_line() +
+  facet_grid(beta ~ alpha) +
+  labs(title = "Distribuciones Beta para distintas combinaciones de alpha y beta",
+       x = "x",
+       y = "Densidad f(x)",
+       color = "Alpha") +
+  xlim(-0.2, 1.2) +
+  theme_minimal()
+```
+
+Se invierte la forma de la gráfica y ahora sí es como una U regular. Y cuando beta aumenta hasta 1, la U desaparece y adopta una forma de L.
 :::
 
 # Ejercicio 3
@@ -268,6 +373,7 @@ El jefe del departamento de analítica te asigna al proyecto y te pide que ajust
 -   ¿Cómo se representa la "tasa de aceptación" en el modelo?
 
 ::: {#respuesta-13 .callout-note}
+$Y \sim Binomial(n,\theta)$ Siendo n el número de usuarios y $\theta$ la probabilidad de que descarguen la app.
 :::
 
 ### Pregunta 14
@@ -277,6 +383,20 @@ El jefe del departamento de analítica te asigna al proyecto y te pide que ajust
 *(Ajusta los ejes correctamente, si hace falta, como en la distribución uniforme).*
 
 ::: {#respuesta-14 .callout-note}
+Sería una beta no informativa, es decir, $\theta \sim Beta(1,1)$, que corresponde con una uniforme(0,1), es decir que los valores que toma el parámetro son equiprobables de inicio.
+
+```{r pregunta 14}
+x_vals <- seq(0, 1, by = PREC)
+beta <- dbeta(x =x_vals ,shape1 = 1,shape2 = 1)
+#Dataframe para graficar
+df <- tibble(x = x_vals, densidad = beta)
+ggplot(df, aes(x=x,y=densidad))+
+  geom_line(color="blue")+
+  labs(title = "Distribución Beta(1,1)",
+       x = "x",
+       y = "Densidad f(x)") +
+  theme_minimal()
+```
 :::
 
 ### Pregunta 15
@@ -284,6 +404,7 @@ El jefe del departamento de analítica te asigna al proyecto y te pide que ajust
 -   Supón que $y$ es el número de usuarios/as que han respondido que "Sí" descargarían la app. Formula la verosimilitud del modelo.
 
 ::: {#respuesta-15 .callout-note}
+$$ L(\theta \mid y, n) = P(Y = y \mid \theta) = \binom{n}{y} \theta^y (1 - \theta)^{n - y}$$
 :::
 
 ## Ajuste del modelo
@@ -305,6 +426,63 @@ aceptacion_muestra <- tibble(
 -   Obtén, en base a estos datos, la distribución posterior de la tasa de aceptación (en forma analítica), y represéntala junto a la distribución previa.
 
 ::: {#respuesta-16 .callout-note}
+Para obtener la distribución posterior se debe aplicar el teorema de Bayes:
+$$ P(\theta \mid Y) \propto P(Y \mid \theta) P(\theta) $$
+En los ejercicios pasados definimos ya la verosimilitud como:
+$$
+P(Y \mid \theta) = \binom{n}{y} \theta^y (1 - \theta)^{n - y}
+$$ 
+Además, tenemos que el parámetro $\theta \sim \text{Beta}(1,1)$, es decir:
+$$P(\theta) = \frac{\theta^{\alpha - 1} (1 - \theta)^{\beta - 1}}{B(\alpha, \beta)}, \quad 0 \leq \theta \leq 1$$
+Para este caso se sustituyen $\alpha = 1$ y $\beta = 1$, entonces tenemos que: 
+$$P(\theta) = \frac{\theta^{1 - 1} (1 - \theta)^{1 - 1}}{B(1,1)}$$
+Simplificando obtenemos que $P(\theta) = 1$, y sustituyendo en la fórmula del teorema de Bayes tenemos:
+$$P(\theta \mid Y) \propto \binom{n}{y} \theta^y (1 - \theta)^{n - y} \cdot 1$$
+El coeficiente binomial se puede omitir dado que es una constante respecto de $\theta$. Entonces: 
+$$P(\theta \mid Y) \propto \theta^y (1 - \theta)^{n - y}$$
+Esta expresión asemeja la función de densidad para una distribución beta: 
+$$P(\theta) \propto \theta^{\alpha - 1} (1 - \theta)^{\beta - 1}$$
+Si nos fijamos en los exponentes podemos establecer las siguientes igualdades:
+$$\alpha - 1 = y, \quad \beta - 1 = n - y$$
+Entonces, resolviendo para $\alpha$ y $\beta$:
+$$\alpha= 1+ y, \quad \beta = 1 + (n - y) $$
+Por lo tanto, la distribución posterior de $\theta$ es:
+$$ (\theta \mid Y) \sim \text{Beta}(1 + y, 1 + (n - y)) $$
+Es decir:
+$$(\theta \mid Y) \sim \text{Beta}(1 + 17, 1 + (22 - 17)) $$
+Finalmente: 
+$$(\theta \mid Y) \sim \text{Beta}(18, 6) $$
+Esto es equivalente a decir que $(\theta \mid Y) \sim \text{Beta}(\alpha + y, \beta + n-y)$, pues en este ejercicio $\alpha = 1 = \beta$.
+
+```{r pregunta 16}
+y <- sum(aceptacion_muestra$resp_descarga_app == "Si") #Número de veces que respondieron "sí"
+n <- nrow(aceptacion_muestra) #Tamaño de la muestra
+#Valores de parámetros de la distribución posterior
+alpha_post <- 1 + y
+beta_post <- 1 + (n - y)
+
+x_vals <- seq(0, 1, by = PREC) #Soporte de la distribución
+
+beta_prev <- dbeta(x_vals, shape1 = 1, shape2 = 1)  # Distribución previa Beta(1,1)
+beta_posterior <- dbeta(x_vals, shape1 = alpha_post, shape2 = beta_post) #Distribución podterior Beta(18,6)
+
+# Crear dataframe
+df <- tibble(
+  x = rep(x_vals, 2),
+  densidad = c(beta_prev, beta_posterior),
+  Distribución = rep(c("Previa: Beta(1,1)", "Posterior: Beta(18,6)"), each = length(x_vals))
+)
+
+# Graficar con ggplot
+ggplot(df, aes(x = x, y = densidad, color = Distribución)) +
+  geom_line() +
+  labs(
+    title = "Distribuciones previa y posterior de Tasa de Aceptación",
+    x = expression("Tasa de Aceptación " ~ (theta)),
+    y = "Densidad"
+  ) +
+  theme_minimal()
+```
 :::
 
 ### Pregunta 17
@@ -314,6 +492,16 @@ aceptacion_muestra <- tibble(
 *(Nota: Ten en cuenta la "precisión" al calcular el "peso" de cada muestra.)*
 
 ::: {#respuesta-17 .callout-note}
+```{r pregunta 17}
+valor_esperado <- alpha_post / (alpha_post + beta_post)
+
+moda <- (alpha_post - 1) / (alpha_post + beta_post - 2)
+
+# Imprimir resultados con precisión
+cat("Valor esperado:", valor_esperado, "\n")
+cat("Moda:", moda, "\n")
+```
+El valor esperado indica que, en promedio, la tasa esperada de aceptación de la app es aproximadamente 75%. La moda de 0.77 indica que este es el valor más probable de la tasa de aceptación con base en los datos observados.
 :::
 
 ## Ajuste con una nueva muestra
@@ -344,6 +532,7 @@ aceptacion_muestra_2 <- tibble(
 -   ¿Qué distribución previa utilizarías en esta ocasión? Formúlala.
 
 ::: {#respuesta-18 .callout-note}
+La distribución que utilizaría sería la posterior que obtuvimos previamente, es decir: $\theta \sim Beta(18,6)$
 :::
 
 ### Pregunta 19
@@ -351,6 +540,73 @@ aceptacion_muestra_2 <- tibble(
 -   Obtén la distribución posterior analítica después de esta segunda muestra, represéntala junto con las dos distribuciones anteriores, y obtén los estimadores posteriores esperado y modal usando el método numérico.
 
 ::: {#respuesta-19 .callout-note}
+Para obtener la distribución posterior se debe aplicar el teorema de Bayes de nuevo. Procedemos análogamente a los cálculos anteriores:
+$$ P(\theta \mid Y) \propto P(Y \mid \theta) P(\theta) $$
+La verosimilitud está dada por:
+$$P(Y \mid \theta) = \binom{n}{y} \theta^y (1 - \theta)^{n - y}$$ 
+El parámetro $\theta \sim \text{Beta}(18,6)$, es decir:
+$$P(\theta) \propto \theta^{\alpha - 1} (1 - \theta)^{\beta - 1}, \quad 0 \leq \theta \leq 1$$
+Para este caso se sustituyen $\alpha = 18$ y $\beta = 6$, entonces tenemos que: 
+$$P(\theta) \propto \theta^{18 - 1} (1 - \theta)^{6 - 1}$$
+Sustituyendo en la fórmula del teorema de Bayes tenemos:
+$$P(\theta \mid Y) \propto \binom{n}{y} \theta^y (1 - \theta)^{n - y} \cdot \theta^{17} (1 - \theta)^{5}$$
+El coeficiente binomial se puede omitir dado que es una constante respecto de $\theta$, y al agrupar los exponentes se tiene: 
+$$P(\theta \mid Y) \propto \theta^{y + 17} (1 - \theta)^{(n - y) + 5}$$
+Sustituyendo $y$ y $n$:
+$$P(\theta \mid Y) \propto \theta^{65 + 17} (1 - \theta)^{(113 - 65) + 5}$$
+Ahora tenemos:
+$$P(\theta \mid Y) \propto \theta^{82} (1 - \theta)^{53}$$
+Comparamos con la forma estándar de la distribución Beta:
+$$P(\theta) \propto \theta^{\alpha - 1} (1 - \theta)^{\beta - 1}$$
+Entonces se obtienen las expresiones necesarias para obtener los nuevos parámetros:
+$$\alpha - 1 = 82, \quad \beta - 1 = 53\\
+\iff
+\alpha = 82 + 1 = 83, \quad \beta = 53 + 1 = 54
+$$
+Por lo tanto, la distribución posterior de $\theta$ es:
+$$(\theta \mid Y) \sim \text{Beta}(83, 54) $$
+Esto es equivalente a formularlo como ($\theta \mid Y) \sim \text{Beta}_{posterior} (\alpha_{previa} + y, \beta_{previa} + (n-y))$, y en este ejercicio teníamos $\alpha_{previa} = 18, \beta_{previa} = 6, y = 65, n = 113$. Es decir:
+$$(\theta \mid Y) \sim \text{Beta}_{posterior}(18+65,6+(113-65))\\
+\iff
+(\theta \mid Y) \sim \text{Beta}_{posterior}(83,54)$$
+```{r pregunta 19.1}
+# Parámetros de las distribuciones
+alpha_prev <- 1
+beta_prev <- 1
+alpha_post_1 <- 18
+beta_post_1 <- 6
+alpha_post_2 <- 83
+beta_post_2 <- 54
+
+# Calcular las densidades de cada distribución
+beta_previa <- dbeta(x_vals, shape1 = alpha_prev, shape2 = beta_prev)  # Beta(1,1)
+beta_posterior_1 <- dbeta(x_vals, shape1 = alpha_post_1, shape2 = beta_post_1)  # Beta(18,6)
+beta_posterior_2 <- dbeta(x_vals, shape1 = alpha_post_2, shape2 = beta_post_2)  # Beta(83,54)
+
+# Crear un dataframe para graficar
+df <- tibble(
+  x = rep(x_vals, 3),
+  densidad = c(beta_previa, beta_posterior_1, beta_posterior_2),
+  Distribución = rep(c("Previa 1: Beta(1,1)", "Posterior 1 (Previa 2): Beta(18,6)", "Posterior 2: Beta(83,54)"), each = length(x_vals))
+)
+
+# Graficar con ggplot
+ggplot(df, aes(x = x, y = densidad, color = Distribución)) +
+  geom_line() +
+  labs(
+    title = "Distribuciones previas y posterior de Tasa de Aceptación",
+    x = expression("Tasa de Aceptación " ~ (theta)),
+    y = "Densidad"
+  ) +
+  theme_minimal()
+
+```
+```{r pregunta 19.2}
+valor_esperado_2 <- alpha_post_2 / (alpha_post_2 + beta_post_2)
+moda_2 <- (alpha_post_2 - 1) / (alpha_post_2 + beta_post_2 - 2)
+cat("Nuevo valor esperado:", round(valor_esperado_2, 4), "\n")
+cat("Nueva moda:", round(moda_2, 4), "\n")
+```
 :::
 
 ## Ajuste con las muestras colapsadas
@@ -363,6 +619,7 @@ aceptacion_muestra_total <- bind_rows(
   aceptacion_muestra, aceptacion_muestra_2
 ) |>
   mutate(id_participante = row_number()) # Los ID están colapsados en una serie
+y_total <- sum(aceptacion_muestra_total$resp_descarga_app == "Si") #Número de veces que respondieron "sí"
 ```
 
 ### Pregunta 20
@@ -370,6 +627,79 @@ aceptacion_muestra_total <- bind_rows(
 -   Obtén la distribución posterior analítica después de esta segunda muestra, represéntala junto con las distribuciones anteriores, y obtén los estimadores posteriores esperado y modal por el método numérico.
 
 ::: {#respuesta-20 .callout-note}
+Para obtener la distribución posterior se debe aplicar el teorema de Bayes de nuevo. Procedemos análogamente a los cálculos anteriores:
+$$ P(\theta \mid Y) \propto P(Y \mid \theta) \cdot P(\theta) $$
+
+La verosimilitud está dada por:
+$$P(Y \mid \theta) = \binom{n}{y} \theta^y (1 - \theta)^{n - y}$$ 
+En este caso, utilizamos como distribución previa una no informativa:
+$$\theta \sim \text{Beta}(1, 1)$$
+Entonces tenemos:
+$$P(\theta) \propto \theta^{\alpha - 1} (1 - \theta)^{\beta - 1}, \quad \text{con } \alpha = 1,\ \beta = 1$$
+
+Sustituyendo los valores correspondientes de $\alpha$ y $\beta$ obtenemos:
+$$P(\theta) \propto \theta^{1 - 1} (1 - \theta)^{1 - 1} = \theta^{0} (1 - \theta)^{0}$$
+Sustituyendo en la fórmula del teorema de Bayes:
+$$P(\theta \mid Y) \propto \binom{n}{y} \theta^y (1 - \theta)^{n - y} \cdot 1$$
+
+El coeficiente binomial se puede omitir, ya que es constante respecto de \( \theta \). Entonces sustituyendo los valores observados $y = 82$ y $n = 135$, tenemos:
+$$P(\theta \mid Y) \propto \theta^{82} (1 - \theta)^{(135 - 82)} = P(\theta \mid Y) \propto \theta^{82} (1 - \theta)^{53}$$
+Comparando con la forma de la distribución Beta:
+$$P(\theta) \propto \theta^{\alpha - 1} (1 - \theta)^{\beta - 1}$$
+Identificamos:
+$$\alpha - 1 = 82, \quad \beta - 1 = 53\\
+\iff \alpha = 83, \quad \beta = 54$$
+\textbf{Por lo tanto, la distribución posterior de $\theta$ después de observar la muestra total es:}
+$$(\theta \mid Y) \sim \text{Beta}(83,54)$$
+O equivalentemente:
+$$(\theta \mid Y) \sim \text{Beta}_{posterior}(1+82,1+(135-82))\\
+\iff
+\theta (\mid Y) \sim \text{Beta}_{posterior}(83,54)$$
+```{r pregunta 20}
+# Parámetros de la nueva distribución posterior (colapsada)
+alpha_post_3 <- 83
+beta_post_3 <- 54
+
+# Calcular la densidad de la nueva posterior
+x_vals_beta <- seq(0, 1, by = PREC) #Soporte
+beta_posterior_3 <- dbeta(x_vals_beta, shape1 = alpha_post_3, shape2 = beta_post_3)
+ #Soporte de la distribución
+# Crear un nuevo dataframe con las 4 distribuciones
+df_total <- tibble(
+  x = rep(x_vals_beta, 4),
+  densidad = c(beta_previa, beta_posterior_1, beta_posterior_2, beta_posterior_3),
+  Distribución = rep(
+    c("Previa 1: Beta(1,1)", 
+      "Posterior 1 (Previa 2): Beta(18,6)", 
+      "Posterior 2 (Previa 3): Beta(83,54)", 
+      "Posterior 3: Beta(83,54)"), 
+    each = length(x_vals_beta)
+  )
+)
+
+# Graficar todas las curvas con líneas diferenciadas
+ggplot(df_total, aes(x = x, y = densidad, color = Distribución, linetype = Distribución)) +
+  geom_line() +
+  scale_linetype_manual(values = c(
+    "Previa 1: Beta(1,1)" = "solid",
+    "Posterior 1 (Previa 2): Beta(18,6)" = "solid",
+    "Posterior 2 (Previa 3): Beta(83,54)" = "solid",
+    "Posterior 3: Beta(83,54)" = "dashed"
+  )) +
+  labs(
+    title = "Distribuciones previas y posterior de Tasa de Aceptación",
+    x = expression("Tasa de Aceptación " ~ (theta)),
+    y = "Densidad"
+  ) +
+  theme_minimal()
+
+
+# Calcular estimadores para la distribución final (colapsada)
+valor_esperado_3 <- alpha_post_3 / (alpha_post_3 + beta_post_3)
+moda_3 <- (alpha_post_3 - 1) / (alpha_post_3 + beta_post_3 - 2)
+cat("Valor esperado posterior (total):", round(valor_esperado_3, 4), "\n")
+cat("Moda posterior (total):", round(moda_3, 4), "\n")
+```
 :::
 
 ### Pregunta 21
@@ -377,6 +707,9 @@ aceptacion_muestra_total <- bind_rows(
 -   ¿Qué concluyes de la respuesta anterior? ¿En qué se diferencia este enfoque del análisis de datos clásico o frecuentista?
 
 ::: {#respuesta-21 .callout-note}
+La última distribución posterior tiene aún menos variabilidad, lo que indica que la estimación de la tasa de aceptación es más precisa. En el enfoque Bayesiano, los parámetros del modelo (en este caso $\theta$) se tratan como variables aleatorias, por lo que es posible obtener distribuciones completas sobre ellos, asignarles probabilidades, y obtener intervalos de credibilidad en los que sí es correcto decir que es hay X% de probabilidad de que un parámetro se encuentre entre cierto intervalo. 
+Para el último ejercicio, en donde se colapsan las muestras, calculé las distribuciones posteriores bajo dos distintas distribuciones previas, la beta (83,54) del inciso anterior, y la beta (1,1) que es no informativa. Los resultados son discrepantes y lo que me hace concluir es que a pesar de que el tamaño de muestra es más grande (n=135), al tomar la distribución previa no informativa, los resultados son iguales a la estimación cuando la muestra solamente tenía 113 observaciones. Esto resalta una diferencia importante entre ambos enfoques ya que en el marco frecuentista las estimaciones son altamente sensibles al tamaño de la muestra, mienstras que aquí se observa que no. 
+
 :::
 
 # Ejercicio 4
@@ -384,39 +717,90 @@ aceptacion_muestra_total <- bind_rows(
 *(NOTA: Para todas las distribuciones, utiliza el valor de `PREC` definido en el ejercicio 1.)*
 
 En un proyecto de investigación educativo, el equipo investigador ha evaluado la rapidez de lectura en las dos clases de 1º de ESO de un colegio.
-Los datos que te entregan consisten en el tiempo en segundos que tarda cada niño en leer un texto estandarizado.
-
-Se quiere obtener un parámetro global promedio del tiempo de lectura para el alumnado de 1º de ESO en el colegio, para lo que te piden ajustar un modelo normal-normal.
-Se pide usar como distribución previa la estimada de la población, que tiene media y varianza de 247 y 1156, respectivamente.
-
-Los datos que te han facilitado son:
-
+  Los datos que te entregan consisten en el tiempo en segundos que tarda cada niño en leer un texto estandarizado.
+  
+  Se quiere obtener un parámetro global promedio del tiempo de lectura para el alumnado de 1º de ESO en el colegio, para lo que te piden ajustar un modelo normal-normal.
+  Se pide usar como distribución previa la estimada de la población, que tiene media y varianza de 247 y 1156, respectivamente.
+  
+  Los datos que te han facilitado son:
+  
 ```{r normal-normal-muestras}
-clase_1 <- tibble(
-  id     = 1:27,
-  tiempo = c(
-    242, 249, 278, 273, 227, 257, 276, 236, 214, 141, 200, 201, 
-    228, 271, 160, 275, 156, 246, 293, 306, 263, 247, 224, 160, 277, 
-    168, 250
+  clase_1 <- tibble(
+    id     = 1:27,
+    tiempo = c(
+      242, 249, 278, 273, 227, 257, 276, 236, 214, 141, 200, 201, 
+      228, 271, 160, 275, 156, 246, 293, 306, 263, 247, 224, 160, 277, 
+      168, 250
+    )
   )
-)
+  
+  clase_2 <- tibble(
+    id     = 1:24,
+    tiempo = c(
+      195, 176, 237, 258, 226, 254, 292, 212, 215, 298, 235, 244, 
+      144, 227, 166, 194, 261, 187, 224, 233, 180, 167, 193, 282
+    )
+  )
+```
+  
+  ## Modelo normal-normal
+  
+  ### Pregunta 22
+  
+  -   Determina la verosimilitud y las distribuciones previa y posterior de la media, asumiendo que la varianza de la verosimilitud es la varianza de los datos. Justifica cómo has obtenido los parámetros de la distribución posterior (usa 2 decimales de precisión).
+  
+::: {#respuesta-22 .callout-note}
+La verosimilitud de $\mu$ bajo el modelo normal-normal se representa como : 
+$$(y_1, y_2, \dots, y_n \mid \mu) \sim \mathcal{N}(\mu, \sigma^2)$$
+La distribución previa del parámetro $\mu$ es: 
+$$\mu \sim \mathcal{N}(\mu_0, \sigma_0^2)$$
+Entonces, la distribución posterior toma la forma normal:
+$$(\mu \mid y) \sim \mathcal{N}(\mu_*, \sigma_*^{2}),$$
+donde:
+$$
+\mu_* = (1 - k) \mu_0 + k \bar{y}, \quad
+\sigma_{*}^2 = k \frac{\sigma^2}{n}, \quad
+k = \frac{n}{n+\sigma^2 / \sigma_0^2}
+$$
+k es el factor de credibilidad.
 
-clase_2 <- tibble(
-  id     = 1:24,
-  tiempo = c(
-    195, 176, 237, 258, 226, 254, 292, 212, 215, 298, 235, 244, 
-    144, 227, 166, 194, 261, 187, 224, 233, 180, 167, 193, 282
-  )
-)
+Ahora, se obtienen primero los estadísticos muestrales:
+```{r pregunta 22.1}
+# Juntar los datos
+lectura <- bind_rows(clase_1, clase_2)
+
+n <- nrow(lectura)
+y_barra <- round(mean(lectura$tiempo),2)
+sigma2 <- round(var(lectura$tiempo),2)
 ```
 
-## Modelo normal-normal
+Entonces tenemos los siguientes valores dados en el problema:
 
-### Pregunta 22
+$n =$ `r n` (tamaño de la muestra), 
 
--   Determina la verosimilitud y las distribuciones previa y posterior de la media, asumiendo que la varianza de la verosimilitud es la varianza de los datos. Justifica cómo has obtenido los parámetros de la distribución posterior (usa 2 decimales de precisión).
+$\bar{y} =$ `r y_barra` (media muestral),  
 
-::: {#respuesta-22 .callout-note}
+$\sigma^2 =$ `r sigma2` (varianza muestral = varianza de la verosimilitud),  
+
+$\mu_0 = 247$ (media de distribucipon previa),  
+
+$\sigma_0^2 = 1156$ (varianza de distribución previa)
+
+Con esto, podemos calcular los parámetros de la distribución posterior:
+```{r pregunta 22.2}
+# Parámetros de la previa
+mu_0 <- 247
+sigma2_0 <- 1156
+
+# Factor de credibilidad
+k <- n / (n + (sigma2 / sigma2_0))
+
+# Media y varianza posterior
+mu_post <- (1 - k) * mu_0 + k * y_barra
+sigma2_post <- k*(sigma2/n)
+```
+Por lo tanto, la distribución posterior es:
+$$(\mu \mid y) \sim \mathcal{N}(228.4,36.11)$$
 :::
 
 ## Estimación
@@ -426,4 +810,36 @@ clase_2 <- tibble(
 -   Representa las distribuciones previa y posterior de la media; considera un eje que cubra 4 desviaciones típicas a cada lado de la media de la distribución previa. Obten el estimador esperado y modal a partir de esta distribución y compáralos con la solución analítica de la pregunta anterior.
 
 ::: {#respuesta-23 .callout-note}
-:::
+```{r pregunta 23}
+# Eje x ±4 desviaciones de la distribución previa)
+sigma_0 <- sqrt(sigma2_0)
+x_vals <- seq(mu_0 - 4 * sigma_0, mu_0 + 4 * sigma_0, by = PREC)
+
+# Calcular densidades para previa y posterior
+sigma_post <- sqrt(sigma2_post)
+df <- tibble(
+  x = rep(x_vals, 2),
+  densidad = c(
+    dnorm(x_vals, mean = mu_0, sd = sigma_0),
+    dnorm(x_vals, mean = mu_post, sd = sigma_post)
+  ),
+  Distribución = rep(c("Previa: Normal(247,1156)", "Posterior: Normal(228.4,36.11)"), each = length(x_vals))
+)
+
+# Graficar ambas distribuciones
+ggplot(df, aes(x = x, y = densidad, color = Distribución)) +
+  geom_line() +
+  labs(
+    title = "Distribuciones previa y posterior de la media de Rapidez de Lectura",
+    x = expression("Rapidez de Lectura" ~ (mu)),
+    y = "Densidad"
+  ) +
+  theme_minimal()
+
+#Obtener el valor esperado y la moda de la distribución posterior
+posterior <- df %>% filter(Distribución == "Posterior")
+dx <- PREC
+esperado <- round(sum((posterior$x * posterior$densidad) * dx), 2)
+moda <- round(posterior$x[which.max(posterior$densidad)],2)
+```
+El valor esperado y la moda son iguales, lo cual es congruente dado que es una distribución normal. Además, estos valores corresponden con lo obtenido en la solución analítica (228.4).
