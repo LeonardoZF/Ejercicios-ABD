@@ -503,8 +503,7 @@ gamma_ambas <- gamma_ambas %>%
 
 ggplot(gamma_ambas, aes(x = x, y = densidad, color = grupo)) +
   geom_line() +
-  labs(x =  expression("Tasa de fertilidad " * theta),y = "Densidad") +
-  theme_minimal()
+  labs(x =  expression("Tasa de fertilidad " * theta),y = "Densidad") s
 
 ```
 :::
