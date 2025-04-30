@@ -384,7 +384,7 @@ En el gráfico anterior se ve que la mayor parte de la distribución (0.979; col
 
 ::: {#respuesta-9 .callout-note}
 Aquí lo que se necesita preguntar es ¿qué tan probable es observar un valor como el de la muestra 1 (17 respuestas 'sí') bajo el modelo ajustado con la muestra 2?
-No tengo claro cómo calcularía un valor p pero entiendo que sería similar a lo hecho en la pregunta 8, es decir que el valor dado representaría la probabilidad de obtener un resultado tan extremo (o más) que el observado en la muestra 1, bajo el modelo ajustado con la muestra 2. Este valor sería muy pequeño, por lo que la hipótesis 'nula' (ambas muestras vienen de la misma población) sería rechazada. 
+No tengo claro cómo calcularía un valor p pero entiendo que sería similar a lo hecho en la pregunta 8, es decir que el valor dado representaría la probabilidad de obtener un resultado tan extremo (o más) que el observado en la muestra 1, bajo el modelo ajustado con la muestra 2. Este valor sería muy pequeño (0.0519), por lo que la hipótesis 'nula' (ambas muestras vienen de la misma población) sería rechazada. 
 :::
 
 ### Pregunta 10
