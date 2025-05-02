@@ -40,6 +40,7 @@ library(tidyverse)
 library(RColorBrewer)
 library(scales)
 library(rstan) # Nuevo paquete para el ejercicio 2 (añadir al entorno!)
+library(coda)
 
 # Configuración de la salida gráfica:
 
@@ -226,7 +227,7 @@ Solamente falta el estao inicial de la cadena.
 -   Consulta la ayuda de la función `gelman.diag()` del paquete `{coda}`. Después, completa el siguiente chunk para calcular el estadístico $R$ (diagnóstico de Gelman-Rubin) para los valores de $θ$ a partir de las dos cadena de Markov que acabas de generar e interprétalo.
 
 ::: {#respuesta-8 .callout-note}
-```{r calcular-diagnostico-GR}
+```{r calcular-diagnostico-GR, eval=FALSE}
 theta_Gibbs <- list(
   theta_Gibbs_1 = cadena_Gibbs  |> pull(theta) |> as.mcmc(),
   theta_Gibbs_2 = cadena_Gibbs2 |> pull(theta) |> as.mcmc()
@@ -235,7 +236,6 @@ theta_Gibbs <- list(
 # COMPLETAR AQUÍ EL CÓDIGO FALTANTE PARA CALCULAR $R$
 
 ```
-
 :::
 
 ### Pregunta 9
@@ -252,7 +252,6 @@ theta_Gibbs <- list(
 # ESCRIBE A CONTINUACIÓN EL CÓDIGO PARA EJECUTAR EL MUESTREADOR DE GIBBS
 
 ```
-
 :::
 
 ### Pregunta 10
@@ -315,7 +314,7 @@ El [archivo "src/geyer_2011_logistic.stan"](src/geyer_2011_logistic.stan) contie
 La sintaxis de R a continuación ejecuta el modelo usando el paquete [`{rstan}`](https://cran.r-project.org/package=rstan).
 Consulta la [guía de usuario de Stan](https://mc-stan.org/docs/2_36/stan-users-guide/) para familiarizarte con esta sintaxis.
 
-```{r ajustar-modelo-Stan}
+```{r ajustar-modelo-Stan, eval=FALSE}
 #| cache: true
 
 # Configuración de Stan para mejorar la eficiencia:
