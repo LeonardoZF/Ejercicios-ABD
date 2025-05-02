@@ -483,6 +483,31 @@ $$
 *(Nota: Para representar una densidad directamente con `ggplot()` a partir de las muestras de simuladas, consulta la ayuda de `geom_density()`)*
 
 ::: {#respuesta-11 .callout-note}
+```{r}
+set.seed(20250327)
+# Número de simulaciones
+n_sim <- 1e6
+
+# Simulaciones para cada grupo
+lambda_sin <- rgamma(n_sim, shape = a_post_sin, rate = b_post_sin)
+lambda_con <- rgamma(n_sim, shape = a_post_con, rate = b_post_con)
+
+posterior_lambda <- bind_rows(
+  tibble(lambda = lambda_sin, grupo = "Sin título universitario"),
+  tibble(lambda = lambda_con, grupo = "Con título universitario")
+)
+
+posterior_lambda |> 
+  ggplot(aes(x = lambda, fill = grupo)) +
+  geom_density(alpha = 0.6, color = "black") + #Contorno y transparencia
+  labs(
+    title = "Distribuciones posteriores de la tasa de fertilidad",
+    x = expression(lambda),
+    y = "Densidad",
+    fill = "Grupo"
+  ) 
+```
+
 :::
 
 ### Pregunta 12
@@ -490,6 +515,30 @@ $$
 -   A partir de las distribuciones posteriores de $\lambda$, aproxima las distribuciones predictivas posteriores simulando datos de la distribución de Poisson (consulta la ayuda de `rpois()` si lo necesitas). Representa las distribuciones predictivas posteriores de ambos grupos.
 
 ::: {#respuesta-12 .callout-note}
+```{r}
+set.seed(20250327)
+
+# Simulación de la distribución predictiva posterior
+y_pred_post_sin <- rpois(n_sim, lambda_sin)
+y_pred_post_con <- rpois(n_sim, lambda_con)
+
+pred_post_lambda <- bind_rows(
+  tibble(y = y_pred_post_sin, grupo = "Sin título universitario"),
+  tibble(y = y_pred_post_con, grupo = "Con título universitario")
+)
+
+pred_post_lambda |> 
+  ggplot(aes(x = y, fill = grupo)) +
+  geom_bar(position = "identity", alpha = 0.6, color = "black") + #Barras superpuestas
+  labs(
+    title = "Distribuciones predictivas posteriores de nº de hijos",
+    x = "Número de hijos",
+    y = "Frecuencia",
+    fill = "Grupo"
+  )
+
+```
+
 :::
 
 ## Inferencia sobre la distribución predictiva posterior
@@ -501,6 +550,27 @@ En base a las distribuciones predictivas posteriores, obtén las respuetas a con
 -   ¿Cuáles son las probabilidades de que una mujer (de 40 años en los 90 en USA) con 4 hijos o más sea o no titulada universitaria? ¿Cuál es la "odds" de que no sea titulada universitaria?
 
 ::: {#respuesta-13 .callout-note}
+```{r}
+# Filtrar mujeres con 4 o más hijos
+fert_4 <- fertilidad_gss_1990 |> 
+  filter(n_hijos >= 4) |> 
+  group_by(titulo_uni) |> 
+  summarise(total = sum(frecuencia), .groups = "drop") #Desagrupar ya hecha la manipulación
+
+# Probabilidades condicionales
+total_4 <- sum(fert_4$total) # P(B)
+
+fert_4 <- fert_4 |> 
+  mutate(prob_condicional = total / total_4) # P(A int B) / P(B)
+
+# Calcular odds
+odds_sin_vs_con <- fert_4$prob_condicional[fert_4$titulo_uni == "sin"] /
+                   fert_4$prob_condicional[fert_4$titulo_uni == "con"]
+
+
+fert_4
+odds_sin_vs_con
+```
 :::
 
 ### Pregunta 14
@@ -508,6 +578,10 @@ En base a las distribuciones predictivas posteriores, obtén las respuetas a con
 -   Si tomamos dos mujeres al azar, una con y otra sin titulación universitaria, ¿cuál es la probabilidad de que la mujer con titulación universitaria tenga más hijos que la mujer sin titulación universitaria?
 
 ::: {#respuesta-14 .callout-note}
+```{r}
+mean(y_pred_post_con > y_pred_post_sin)
+```
+
 :::
 
 ### Pregunta 15
@@ -515,6 +589,7 @@ En base a las distribuciones predictivas posteriores, obtén las respuetas a con
 -   A partir de estas aproximaciones a las distribuciones predictivas posteriores, ¿podrías obtener la probabilidad conjunta de que una mujer no tenga ningún hijo y sea o no titulada universitaria? Justifica tu respuesta.
 
 ::: {#respuesta-15 .callout-note}
+No tengo nada claro cómo responder esta pregunta.
 :::
 
 ## Comprobaciones predictivas posteriores
@@ -524,6 +599,41 @@ En base a las distribuciones predictivas posteriores, obtén las respuetas a con
 -   Representa la *proporción* de mujeres tituladas universitarias en función del número de hijos, junto con su distribución predictiva posterior.
 
 ::: {#respuesta-16 .callout-note}
+```{r}
+# Proporción de observados
+prop_obs <- fertilidad_gss_1990 |>
+  group_by(n_hijos) |>
+  summarise(
+    total_con = sum(frecuencia[titulo_uni == "con"]),
+    total_sin = sum(frecuencia[titulo_uni == "sin"]),
+    total = total_con + total_sin,
+    prop_con = total_con / total) |>
+  mutate(tipo = "Observada")
+
+# Predictiva posterior para con título universitario según el número de hijos
+sim_con <- tibble(n_hijos = y_pred_post_con) #Transformar vector en tibble
+
+# Proporción de predictiva posterior
+prop_sim <- sim_con |>
+  group_by(n_hijos) |>
+  summarise(n = n(), .groups = "drop") |>
+  mutate(
+    prop_con = n / sum(n),
+    tipo = "Predictiva")
+
+prop_comb <- bind_rows(prop_obs, prop_sim)
+
+prop_comb |>
+  ggplot(aes(x = n_hijos, y = prop_con, color = tipo)) +
+  geom_line() +
+  labs(
+    title = "Proporción de mujeres con título universitario según nº de hijos",
+    x = "Número de hijos",
+    y = "Proporción",
+    color = ""
+  )
+```
+
 :::
 
 ## Comprobaciones predictivas posteriores sobre la muestra
@@ -546,6 +656,15 @@ A continuación vamos a hacer eso mismo con las distribuciones predictivas poste
 -   Observa el máximo número de hijos que se obtiene en la distribución empírica y en la distribución predictiva posterior en la pregunta 16. ¿Cuánto es en cada caso?
 
 ::: {#respuesta-17 .callout-note}
+```{r}
+max_empírico <- fertilidad_gss_1990 |>
+  filter(titulo_uni == "con") |>
+  summarise(max_n_hijos = max(n_hijos)) |>
+  pull()
+
+tibble(max_emp=max_empírico,max_pred=max(y_pred_post_con))
+```
+
 :::
 
 ### Pregunta 18
@@ -555,8 +674,9 @@ A continuación vamos a hacer eso mismo con las distribuciones predictivas poste
 ::: {#respuesta-18 .callout-note}
 ```{r max-poisson}
 max_poisson <- function(lambda, n) {
-  
-  # COMPLETAR AQUÍ EL CUERPO DE LA FUNCIÓN
+  muestra <- rpois(n, lambda)   # simular muestra de tamaño n de Poisson(lambda)
+  max_valor <- max(muestra)     # tomar el máximo de la muestra
+  return(max_valor)
 }
 ```
 :::
@@ -568,6 +688,15 @@ max_poisson <- function(lambda, n) {
 *(NOTA: ¡Cuidado! Probablemente tengas que "iterar" sobre las muestras de la distribución posterior)*
 
 ::: {#respuesta-19 .callout-note}
+```{r}
+set.seed(20250327)
+maximos_simulados <- sapply(lambda_con, max_poisson, n = n_con)
+
+# Calcular el valor-p predictivo posterior
+ppp_max <- mean(maximos_simulados <= max_empírico)
+ppp_max
+```
+En el 95.1% de las simulaciones el valor máximo es igual o menor al empírico, es decir que ese valor máximo no es nada inusual. El modelo ajustado es compatible con lo empírico. 
 :::
 
 ### Pregunta 20
@@ -575,4 +704,21 @@ max_poisson <- function(lambda, n) {
 -   En base a tus observaciones de las distribuciones predictivas posteriores, propón una comprobación predictiva posterior en alguna (o ambas) de las distribuciones en función de la titulación universitaria. Determina el valor-$p$ predictivo posterior correspondiente e interprétalo.
 
 ::: {#respuesta-20 .callout-note}
+```{r}
+media_empirica_con <- fertilidad_gss_1990 |>
+  filter(titulo_uni == "con") |>
+  summarise(media = weighted.mean(n_hijos, frecuencia)) |> #Media ponderada
+  pull()
+
+set.seed(20250327)
+medias_simuladas <- sapply(lambda_con, function(x) {
+  mean(rpois(n_con, x))
+})
+
+ppp_media <- min(1, 2 * min( #Forzar a que máximo sea 1
+  mean(medias_simuladas <= media_empirica_con),
+  mean(medias_simuladas >= media_empirica_con)))
+ppp_media
+```
+El valor‑p predictivo posterior obtenido fue 1. Esto quiere decir que el valor observado del estadístico (la media) es compatible con el modelo ajustado. Tal vez este estadístico no es muy informativo finalmente. 
 :::
