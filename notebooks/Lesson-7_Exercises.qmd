@@ -325,7 +325,7 @@ ess_2
 -   Consulta la ayuda de la función `gelman.diag()` del paquete `{coda}`. Después, completa el siguiente chunk para calcular el estadístico $R$ (diagnóstico de Gelman-Rubin) para los valores de $θ$ a partir de las dos cadena de Markov que acabas de generar e interprétalo.
 
 ::: {#respuesta-8 .callout-note}
-```{r calcular-diagnostico-GR, eval=FALSE}
+```{r calcular-diagnostico-GR, eval=TRUE}
 theta_Gibbs <- list(
   theta_Gibbs_1 = cadena_Gibbs  |> pull(theta) |> as.mcmc(),
   theta_Gibbs_2 = cadena_Gibbs2 |> pull(theta) |> as.mcmc()
@@ -407,7 +407,7 @@ acf(theta_mcmc_LONG_2)
 ess_LONG_2 <- effectiveSize(theta_mcmc_LONG_2)
 ess_LONG_2
 
-# --- Diagnóstico de Gelman-Rubin ---
+# Diagnóstico de Gelman-Rubin
 theta_Gibbs_100k <- mcmc.list(theta_mcmc_LONG_1, theta_mcmc_LONG_2)
 gelman.diag(theta_Gibbs_100k, confidence = 0.95, autoburnin = TRUE)
 ```
