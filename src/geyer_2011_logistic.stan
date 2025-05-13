@@ -22,6 +22,7 @@ model {
 }
 
 generated quantities {
-
-  // TODO: Completar con los valores al cuadrado de `alpha` y `beta`
+  real alpha_2 = square(alpha);         // Cuadrado de alpha
+  vector[K] beta_2 = square(beta);      // Cuadrados de cada componente de beta
 }
+

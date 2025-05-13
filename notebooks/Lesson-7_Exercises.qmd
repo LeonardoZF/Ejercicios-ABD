@@ -548,6 +548,11 @@ fit_logit_stan <- stan(
 -   Fíjate en la sección `data` (líneas 2-7) en el modelo de Stan. En base a esto, explica la estructura del objeto `datos_logit`.
 
 ::: {#respuesta-14 .callout-note}
+El objeto datos_logit es una lista con cuatro componentes:
+N: un número entero que representa la cantidad total de observaciones.
+K: un número entero que indica el número de variables predictoras.
+x: una matriz numérica de dimensiones N × K, que contiene los valores de las variables predictoras.
+y: un vector de longitud N con valores binarios (0 o 1), correspondiente a la variable respuesta.
 :::
 
 ### Pregunta 15
@@ -644,6 +649,16 @@ Fíjate en la sección [`generated quantities`](https://mc-stan.org/docs/referen
 -   Añade a la sección `generated quantities` del modelo en Stan el código necesario para que genere un valor real llamado `alpha_2`, con el valor al cuadrado de `alpha`, y un vector llamado `beta_2` con los valores al cuadrado de `beta`. Ayúdate de la [referencia de Stan sobre funciones reales](https://mc-stan.org/docs/functions-reference/real-valued_basic_functions.html). Después ejecuta el modelo en Stan de nuevo y comprueba si la salida ha generado los nuevos valores correctamente. Representa las distribuciones de estos nuevos valores.
 
 ::: {#respuesta-21 .callout-note}
+```{r}
+
+# Convertir a array para graficar
+fit_array <- as.array(fit_logit_stan)
+
+# Distribuciones posteriores de alpha_2 y beta_2
+mcmc_dens_overlay(fit_array, pars = c("alpha_2", "beta_2[1]", "beta_2[2]", "beta_2[3]", "beta_2[4]"))
+
+```
+
 :::
 
 # Referencias
