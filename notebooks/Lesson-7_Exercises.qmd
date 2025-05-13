@@ -650,12 +650,20 @@ Fíjate en la sección [`generated quantities`](https://mc-stan.org/docs/referen
 
 ::: {#respuesta-21 .callout-note}
 ```{r}
+#| cache: true
+
+fit_logit_stan_2 <- stan(
+  file = "../src/geyer_2011_logistic.stan",
+  data = datos_logit,
+  iter = 1000,
+  chains = 4
+)
 
 # Convertir a array para graficar
-fit_array <- as.array(fit_logit_stan)
+fit_array_2 <- as.array(fit_logit_stan_2)
 
 # Distribuciones posteriores de alpha_2 y beta_2
-mcmc_dens_overlay(fit_array, pars = c("alpha_2", "beta_2[1]", "beta_2[2]", "beta_2[3]", "beta_2[4]"))
+mcmc_dens_overlay(fit_array_2, pars = c("alpha_2", "beta_2[1]", "beta_2[2]", "beta_2[3]", "beta_2[4]"))
 
 ```
 

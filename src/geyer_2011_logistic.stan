@@ -26,3 +26,5 @@ generated quantities {
   vector[K] beta_2 = square(beta);      // Cuadrados de cada componente de beta
 }
 
+//
+
