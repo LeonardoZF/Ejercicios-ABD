@@ -150,7 +150,7 @@ donde:$\Pr(\delta = d)$ son las probabilidades previas (guardadas en `PROB_DELTA
 ```{r}
 muestrear_delta <- function(theta) {
   dist_delta_cond_theta <- PROB_DELTA * dnorm(theta, mean = MEDIAS, sd = sd) / #Numerador de ec. p.100
-           PROB_DELTA * sum(dnorm(theta, mean = MEDIAS, sd = sd)) #Denominador de ec. p.100
+           sum(PROB_DELTA * dnorm(theta, mean = MEDIAS, sd = sd)) #Denominador de ec. p.100
   # Muestrear un valor de delta (1, 2 o 3) según esa distribución
   delta <- sample(x = 1:3, size = 1, prob = dist_delta_cond_theta)
   return(delta)
