@@ -1,0 +1,149 @@
+---
+title: "Tema 8: Práctica"
+format:
+  html:
+    code-copy:       true
+    code-tools:      true
+    embed-resources: true
+    theme:           ../www/extra-styles.scss
+    toc:             true
+    toc-location:    left
+callout-appearance: minimal
+---
+
+# Introducción
+explica el problema de investigación.
+```{r setup}
+#| message: false
+
+# Paquetes:
+library(tidyverse)
+library(RColorBrewer)
+
+
+# Configuración de la salida gráfica:
+
+PALETA <- brewer.pal(8, "Set2") # Colores por defecto
+color_defecto  <- PALETA[1]
+options(ggplot2.discrete.colour = PALETA)
+
+theme_set(theme_bw()) # Tema "neutro" para la representación gráfica
+```
+# Metodología
+centrada en la estimación Bayesiana (incluye la elección de distribuciones previas).
+
+```{r ejemplo-uniforme}
+PREC     <- 1e-3 # Precisión para representar la función de densidad (milésimas)
+DENS_INF <- 0    # Rango inferior de la función de densidad
+DENS_SUP <- 1    # Rango superior de la función de densidad
+
+uniforme <- tibble( # Esta función crea un "data.frame" o tabla de datos
+  variable = seq(from = DENS_INF, to = DENS_SUP, by = PREC),
+  densidad = variable |> dunif(min = DENS_INF, max = DENS_SUP)
+)
+
+uniforme |> glimpse() # Muestra el objeto con los datos, contiene 2 columnas 
+
+uniforme |> # Usando la tabla de datos antes creada, crea un objeto gráfico
+  ggplot(mapping = aes(x = variable, y = densidad)) + # "Mapea" columnas a
+                                                      #   coordenadas
+  geom_line(color = color_defecto) + # Representa mediante una línea continua
+  
+  ylim( # Fija el límite inferior a 0 para mostrar el eje y completo:
+    0,  # (Usa la propia distribución para establecer el límite superior)
+    uniforme |> pull(densidad) |> max()
+  )
+```
+
+Aplicando un código similar, se puede representar una distribución normal estandarizada $x \sim N(0, 1)$:
+
+```{r ejemplo-normal}
+DENS_INF <- -4 # Usamos un rango más adecuado para la normal estandarizada
+DENS_SUP <-  4
+
+normal <- tibble( # Reutilizamos `PREC` del "chunk" de código anterior
+  variable = seq(from = DENS_INF, to = DENS_SUP, by = PREC),
+  densidad = variable |> dnorm()
+)
+
+# Al cubrir la distribución el rango desde 0 hasta el máximo, en este caso no
+#   es necesario establecer los límites manualmente
+normal |>
+  ggplot(mapping = aes(x = variable, y = densidad)) +
+  geom_line(color = color_defecto)
+```
+
+```{r integral-uniforme}
+uniforme |> summarize(integral = PREC * sum(densidad))
+```
+
+```{r}
+uniforme |> summarize(
+  integral = PREC * (sum(densidad) - 0.5 * (first(densidad) + last(densidad)))
+)
+```
+
+```{r integral-normal}
+normal |> summarize(
+  integral = sum(densidad) * PREC
+)
+```
+
+```{r integral-normal-mas-precisa}
+tibble( # Ampliando el rango a [-10, 10]:
+  variable = seq(from = -10, to = 10, by = PREC),
+  densidad = variable |> dnorm()
+) |>
+  summarize(integral = sum(densidad) * PREC)
+
+tibble( # Usando precisión de "millonésimas":
+  variable = seq(from = DENS_INF, to = DENS_SUP, by = 1e-6),
+  densidad = variable |> dnorm()
+) |>
+  summarize(integral = sum(densidad) * 1e-6) # Misma precisión en la integral
+```
+
+```{r integral-normalizada}
+uniforme |> summarize(
+  integral = PREC * sum(densidad),
+  integral = integral / integral # Normalización
+)
+
+normal |> summarize(
+  integral = PREC * sum(densidad),
+  integral = integral / integral # Normalización
+)
+```
+
+# Resultados
+Evaluación de la aproximación
+Estimadores (centrales, intervalos, representación posterior)
+Al menos una aplicación (contraste de hipótesis, comprobación) mediante una distribución predictiva posterior.
+
+### Pregunta 1
+
+-   ¿Cuál es el valor máximo de la función de densidad?
+
+::: {#respuesta-1 .callout-note}
+```{r pregunta 1}
+resultado <- tibble(
+  variable = seq(from = -5, to = 5, by = 1e-6),
+  densidad = variable |> dnorm()
+)
+max_densidad <- max(resultado$densidad)
+```
+
+El valor máximo es `r max_densidad`
+:::
+
+### Pregunta 2
+
+::: {#respuesta-2 .callout-note}
+```{r pregunta 2}
+pos_max <- which(resultado$densidad==max_densidad)
+valor <- resultado$variable[pos_max]
+```
+
+Para el valor `r valor`, que es la moda.
+:::
+
