@@ -1,0 +1,156 @@
+---
+title: "Regresión logística bayesiana: Predicción de diabetes"
+format:
+  html:
+    code-copy: true
+    code-tools: true
+    embed-resources: true
+    toc: true
+    toc-location: left
+    execute: true
+---
+
+## 1. Pregunta de investigación
+
+¿Se puede predecir si una mujer de origen Pima tiene diabetes en función de variables clínicas como glucosa, masa corporal, presión y edad?
+
+Este problema es ideal para una regresión logística bayesiana, dado que la variable de interés es binaria (`diabetes = pos` o `neg`) y tenemos conocimiento previo moderado sobre los efectos de ciertas variables clínicas.
+
+## 2. Preparación de los datos
+
+```{r}
+library(tidyverse)
+library(mlbench)
+library(rstanarm)
+library(bayesplot)
+library(broom.mixed)
+
+# Cargar y preparar
+data(PimaIndiansDiabetes2)
+datos <- PimaIndiansDiabetes2 %>%
+  drop_na() %>%
+  mutate(diabetes = factor(diabetes, levels = c("neg", "pos")))
+```
+
+## 3. Visualización inicial
+
+```{r}
+datos %>%
+  ggplot(aes(x = glucose, fill = diabetes)) +
+  geom_density(alpha = 0.5) +
+  labs(title = "Distribución de glucosa por estado de diabetes")
+```
+
+```{r}
+datos %>%
+  ggplot(aes(x = mass, fill = diabetes)) +
+  geom_density(alpha = 0.5) +
+  labs(title = "Distribución de IMC por estado de diabetes")
+```
+
+```{r}
+datos %>%
+  ggplot(aes(x = age, fill = diabetes)) +
+  geom_density(alpha = 0.5) +
+  labs(title = "Distribución de edad por estado de diabetes")
+```
+```{r}
+datos %>%
+  ggplot(aes(x = pressure, fill = diabetes)) +
+  geom_density(alpha = 0.5) +
+  labs(title = "Distribución de presión arterial diastólica por estado de diabetes")
+```
+## 4. Especificación del modelo
+
+Queremos modelar la probabilidad de que una persona tenga diabetes:
+
+$$
+P(y_i = 1 \mid \mathbf{x}_i) = \frac{1}{1 + \exp(-\eta_i)}
+$$
+
+con:
+
+$$
+\eta_i = \beta_0 + \beta_1 \cdot \text{glucose}_i + \beta_2 \cdot \text{mass}_i + \beta_3 \cdot \text{age}_i + \beta_4 \cdot \text{pressure}_i
+$$
+
+## 5. Priors
+
+Asumimos priors normales débiles:
+
+$$
+\beta_j \sim \mathcal{N}(0, 10^2)
+$$
+
+Esto refleja poca información previa pero evita valores extremos.
+
+## 6. Ajuste del modelo
+
+```{r}
+modelo_bayes <- stan_glm(
+  diabetes ~ glucose + mass + age + pressure,
+  data = datos,
+  family = binomial(link = "logit"),
+  prior = normal(0, 10),
+  prior_intercept = normal(0, 10),
+  chains = 4, iter = 2000, seed = 42
+)
+```
+
+## 7. Resultados del modelo
+
+```{r}
+print(modelo_bayes, digits = 4)
+posterior <- as.matrix(modelo_bayes)
+```
+
+### Coeficientes como Odds Ratios
+
+```{r}
+posterior_summary <- tidy(modelo_bayes, conf.int = TRUE, conf.level = 0.95) %>%
+  mutate(OddsRatio = exp(estimate),
+         OR_low = exp(conf.low),
+         OR_high = exp(conf.high)) %>%
+  select(term, OddsRatio, OR_low, OR_high)
+
+posterior_summary
+```
+Los resultados del modelo nos permiten entender cómo cada variable influye en el riesgo de que una mujer de origen Pima tenga diabetes. Empezamos por la glucosa, que muestra el efecto más fuerte. El modelo estima que por cada punto adicional de glucosa en sangre, el riesgo (medido como odds) de tener diabetes aumenta en aproximadamente un 3.8%. Esto puede parecer modesto si se considera de forma aislada, pero en la práctica las diferencias entre pacientes suelen ser mucho mayores. Por ejemplo, una mujer con 140 mg/dL frente a otra con 100 representa una diferencia de 40 unidades. Aquí es importante entender que el modelo no suma ese 3.8% cuarenta veces: lo multiplica sobre sí mismo. En términos técnicos, el efecto se acumula exponencialmente: se calcula como 
+1.038^40, lo cual da aproximadamente 4.3. Es decir, la mujer con glucosa más alta tendría más de cuatro veces más riesgo de diabetes que la otra, manteniendo todo lo demás constante. Este crecimiento acumulativo del riesgo explica por qué, aunque el cambio por punto parezca pequeño, el impacto total puede ser muy grande. Por eso, la glucosa se convierte en el predictor más potente del modelo, mostrando una relación fuerte, consistente y clínicamente significativa.
+
+
+El índice de masa corporal (mass) también presenta una asociación importante con el riesgo de diabetes. El modelo estima que, por cada punto adicional de IMC, el riesgo (odds) de tener diabetes aumenta en un 8.4%. Este efecto, al igual que en el caso de la glucosa, se acumula de forma multiplicativa. Por ejemplo, una diferencia de 5 puntos en el IMC entre dos pacientes —algo bastante común en la práctica— se traduce en un incremento de riesgo de aproximadamente 
+1.084
+5
+≈
+1.5
+1.084 
+5
+ ≈1.5, es decir, un 50% más de riesgo. Este hallazgo refuerza el papel bien establecido del sobrepeso como factor de riesgo para enfermedades metabólicas como la diabetes tipo 2. Además, a diferencia de la edad o la genética, el IMC es una variable potencialmente modificable, lo que la convierte en un objetivo relevante para estrategias de prevención y tratamiento.
+
+La edad también muestra una relación clara con el riesgo de diabetes. Por cada año adicional, el modelo estima un incremento del 5.7% en los odds de padecer la enfermedad. Aunque este valor puede parecer modesto, su efecto acumulado es considerable. Comparando a una mujer de 45 años con una de 25, la diferencia de 20 años equivale a 
+1.057^20≈ 3.0, lo que implica que la mujer mayor tiene el triple de riesgo de ser diabética, manteniendo iguales las demás variables. Este resultado es coherente con la evolución natural de muchas enfermedades crónicas, que tienden a aumentar con la edad debido a cambios fisiológicos acumulativos y exposición prolongada a factores de riesgo. Aunque la edad no se puede modificar, sí permite identificar grupos más vulnerables que pueden beneficiarse de seguimiento más frecuente o intervención temprana.
+
+En cambio, la presión arterial no muestra una asociación clara en este modelo. El odds ratio estimado es cercano a 1, y su intervalo creíble del 95% incluye ampliamente ese valor, lo que indica que no hay evidencia suficiente para afirmar que la presión arterial influya significativamente en el riesgo de diabetes en esta muestra. Esto no quiere decir que la presión no sea un indicador clínico importante en general (especialmente para riesgo cardiovascular), pero en este caso específico, no aporta valor predictivo significativo para la presencia de diabetes. Es posible que su efecto esté mediado por otras variables no consideradas en el modelo, o que simplemente no sea un factor determinante en esta población concreta.
+### Visualización de efectos
+
+```{r}
+mcmc_intervals(posterior,
+               pars = c("(Intercept)", "glucose", "mass", "age", "pressure"),
+               transform = "exp") +
+  ggtitle("Intervalos creíbles de los Odds Ratio")
+```
+
+## 8. Predicción bayesiana
+
+Supongamos una mujer con glucosa 140, masa 35, edad 40, presión 70:
+
+```{r}
+nuevo <- tibble(glucose = 140, mass = 35, age = 40, pressure = 70)
+
+pred <- posterior_predict(modelo_bayes, newdata = nuevo)
+mean(pred)
+
+```
+
+
