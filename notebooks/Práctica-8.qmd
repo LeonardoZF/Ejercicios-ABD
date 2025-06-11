@@ -1,0 +1,320 @@
+---
+title: "Tema 8: Práctica final."
+format:
+  html:
+    code-copy:       true
+    code-tools:      true
+    embed-resources: true
+    theme:           ../www/extra-styles.scss
+    toc:             true
+    toc-location:    left
+callout-appearance: minimal
+editor: 
+  markdown: 
+    wrap: 72
+---
+
+```{r message=FALSE, warning=FALSE}
+library(bayesrules)
+library(rstanarm)
+library(bayesplot)
+library(tidyverse)
+library(tidybayes)
+library(broom.mixed)
+library(mlbench)
+```
+
+# Introducción
+
+En el presente trabajo se intenta predecir si una mujer de origen Pima
+tiene diabetes en función de variables clínicas como glucosa en sangre.
+Para esto, se aplica un modelo de regresión logística a la base de datos
+PimaIndiansDiabetes2 del paquete mlbench.
+
+```{r}
+# Cargar y preparar datos
+data(PimaIndiansDiabetes2)
+datos <- PimaIndiansDiabetes2 %>%
+  drop_na() %>%
+  mutate(diabetes = factor(diabetes, levels = c("neg", "pos")))
+```
+
+```{r}
+# Explorar datos
+glimpse(datos)
+summary(datos)
+datos %>%
+  ggplot(aes(x = glucose, fill = diabetes)) +
+  geom_density(alpha = 0.5) +
+  labs(title = "Distribución de glucosa por estado de diabetes")+
+   theme_minimal()
+
+#Proporción basal de mujeres con diabetes en la muestra
+media_pos <- mean(datos$diabetes == "pos")
+
+# Estandarizar la variable predictora
+datos <- datos %>%
+  mutate(glucose_std = scale(glucose))
+```
+
+# Metodología
+
+En este caso, la variable $Y_i$ es dicotómica (solo puede tomar dos
+valores: 0 o 1), indicando la ausencia o presencia de diabetes.
+
+Por tanto, el modelo de probabilidad más apropiado es el modelo
+Bernoulli. Denotando con $\pi_i$ la probabilidad de que la paciente $i$
+tenga diabetes, se tiene:
+
+$$
+Y_i \mid \pi_i \sim \text{Bern}(\pi_i)
+$$ Para completar la estructura del modelo Bernoulli, es necesario
+especificar cómo depende el valor esperado de $Y_i$, es decir, $\pi_i$,
+de los predictores clínicos (por ejemplo, $X_{i1}$). Se introduce
+entonces una función de enlace $g(\cdot)$ que transforma la probabilidad
+$\pi_i$ para que pueda relacionarse linealmente con los predictores:
+
+$$
+g(\pi_i) = \beta_0 + \beta_1 X_{i1}
+$$
+
+En el caso de la regresión logística, esta función de enlace es el
+logit:
+
+$$
+g(\pi_i) = \log\left( \frac{\pi_i}{1 - \pi_i} \right)
+$$ Esto permite modelar probabilidades dentro del intervalo (0, 1) a
+partir de una combinación lineal de variables explicativas, en este caso
+la glucosa en sangre.
+
+Entonces se plantea el siguiente modelo:
+
+$$
+Y_i \mid \beta_0, \beta_1 \overset{\text{ind}}{\sim} \text{Bern}(\pi_i) \quad \text{con} \quad \log\left( \frac{\pi_i}{1 - \pi_i} \right) = \beta_0 + \beta_1 X_{i1}
+$$ Es decir, se asume que el logaritmo del odds (razón de
+probabilidades) está relacionado linealmente con el predictor clínico
+(glucosa en este caso).
+
+Para facilitar la interpretación, esta relación se puede reescribir como
+odds (razón de probabilidades), usando propiedades de la función
+logarítmica: $$
+\frac{\pi_i}{1 - \pi_i} = \exp(\beta_0 + \beta_1 X_{i1})
+$$
+
+Para completar el modelo Bayesiano de regresión logística para $Y$, es
+necesario especificar distribuciones previas para los parámetros de
+regresión: ($\beta_0$ y $\beta_1$).
+
+Dado que ambos parámetros pueden tomar cualquier valor en la recta real,
+se les pueden asignar distribuciones normales independientes.
+
+En este caso, para facilitar la interpretación, expresamos el
+conocimiento previo sobre el intercepto $\beta_0$ en una versión
+estandarizada $\beta_{0std}$, que representa el valor basal del modelo
+cuando el predictor (glucosa en sangre) está estandarizado.
+
+En los datos observados, aproximadamente el `r media_pos*100` % de las
+mujeres tienen diabetes, lo cual sugiere una probabilidad basal cercana
+a $\pi \approx 0.33$. Transformando esta probabilidad a la escala logit:
+
+$$
+\text{logit}(\pi) = \log\left(\frac{\pi}{1 - \pi}\right) = \log\left(\frac{0.33}{0.67}\right) \approx -0.70
+$$
+
+Entonces una prior razonable para el intercepto estandarizado sería:
+
+$$
+\beta_{0std} \sim \mathcal{N}(-0.70,\ 1^2)
+$$ Una varianza de 1 implica que aproximadamente el 95% del área bajo la
+curva de la distribución previa cae entre:
+
+$$
+[-0.70 - 2(1),\ -0.70 + 2(1)] = [-2.70,\ 1.30]
+$$
+
+En términos de probabilidad (mediante la función logística inversa),
+esto equivale a:
+
+```{r results='hide'}
+invlogit(-2.7)
+invlogit(1.3)
+```
+
+-   $\text{invlogit}(-2.7) \approx 0.063$
+-   $\text{invlogit}(1.3) \approx 0.785$
+
+Por lo tanto, esta prior permite que la proporción basal de diabetes se
+mueva libremente entre aproximadamente 6% y 79%, un rango amplio y
+compatible con la proporción observada, es decir que hay flexibilidad
+razonable.
+
+Por otro lado, para la pendiente $\beta_1$, que representa el efecto de
+la glucosa estandarizada sobre el riesgo de diabetes, también podemos
+elegir una distribución previa razonable. Como referencia clínica,
+sabemos que una paciente con glucosa de al menos 126 mg/dL tiene un
+riesgo significativamente mayor de diabetes en comparación con otra con
+niveles normales (\~100 mg/dL). Esta diferencia de aproximadamente 25
+unidades representa, según estudios clínicos, un aumento de riesgo de
+entre 2 y 3.5 veces. En este caso tomaremos un valor intermedio
+conservador, 2.5.
+
+```{r}
+std_gluc <- sd(datos$glucose)
+```
+
+La desviación estándar de glucosa es aproximadamente `r std_gluc`,
+entonces una diferencia de 25 unidades equivale a:
+
+$$
+\Delta X \approx \frac{25}{30.86} \approx 0.81\ \text{desviaciones estándar}
+$$
+
+Asumimos entonces: $$
+\exp(0.81 \cdot \beta_1) = 2.5
+$$ Aplicando logaritmos en ambos lados: $$
+0.81 \cdot \beta_1 = \log(2.5) \Rightarrow \beta_1 = \frac{\log(2.5)}{0.81} \approx 1.13
+$$ Esto implica que un incremento de 1 desviación estándar en glucosa se
+asociaría con un aumento esperado de los odds de: $$
+\exp(1.13) \approx 3.09
+$$
+
+Es decir, una triplicación del riesgo, lo cual es coherente con la
+información clínica previamente presentada.
+
+Por tanto, se propone la siguiente distribución previa:
+
+$$
+\beta_1 \sim \mathcal{N}(1.13,\ 0.3^2)
+$$ Esta prior permite un rango de efectos bastante amplio.
+Aproximadamente el 95% de la densidad se concentra entre:
+
+$$
+[1.13 - 2(0.3),\ 1.13 + 2(0.3)] = [0.53,\ 1.73]
+$$
+
+Que en términos de odds ratios es:
+
+$$
+\exp(0.53) \approx 1.70 \quad \text{y} \quad \exp(1.73) \approx 5.64
+$$ Esta amplitud refleja una incertidumbre moderada, suficientemente
+flexible.
+
+# Resultados
+
+Se ajusta el modelo utilizando Stan, especificando las priors y la
+función de verosimilitud correspondiente:
+
+```{r}
+modelo <- stan_glm(
+  diabetes ~ glucose_std,
+  data = datos, 
+  family = binomial(link = "logit"),
+  prior = normal(1.13, 0.3),
+  prior_intercept = normal(-0.7, 1),
+  chains = 4, iter = 2000, seed = 123
+)
+```
+
+```{r}
+summary(modelo)
+# Extraer las muestras de la posterior como data.frame
+posterior <- as.data.frame(modelo)
+mcmc_intervals(posterior, pars = c("(Intercept)", "glucose_std"), transform = "exp") +
+  ggtitle("Intervalos de credibilidad (80% y 95%) para Odds Ratio")
+```
+
+El valor del intercepto representa los odds de tener diabetes para una
+mujer con glucosa estandarizada = 0, es decir, glucosa promedio. El
+valor de aproximadamente 0.4 sugiere que los odds de diabetes son
+menores que 1 en ese caso, es decir, menos probable que sí tenga
+diabetes. El odds ratio estimado está centrado aproximadamente en 3.5,
+con un intervalo de ceredibilidad del 95% que va desde $\approx$ 3.0 a
+4.1. Esto significa que por cada desviación estándar adicional de
+glucosa, los odds de tener diabetes se multiplican por entre 3 y 4
+veces. Dado que este intervalo no incluye el valor 1, el efecto es
+estadísticamente significativo.
+
+Se ilustra además el cambio de la prior a la posterior después de haber
+tomado en cuenta los datos
+
+```{r}
+prior_b0 <- function(x) dnorm(x, mean = -0.7, sd = 1)
+prior_b1 <- function(x) dnorm(x, mean = 1.13, sd = 0.3)
+
+# Plot posterior vs prior para el intercepto
+ggplot(posterior, aes(x = `(Intercept)`)) +
+  geom_density(fill = "blue", alpha = 0.6, color = NA) +
+  stat_function(fun = prior_b0, linetype = "dashed", color = "black") +
+  labs(title = "Distribución posterior vs prior para el intercepto",
+       x = expression(beta[0]),
+       y = "Densidad") +
+  theme_minimal()
+
+
+# Plot posterior vs prior para la pendiente
+ggplot(posterior, aes(x = glucose_std)) +
+  geom_density(fill = "red", alpha = 0.6, color = NA) +
+  stat_function(fun = prior_b1, linetype = "dashed", color = "black") +
+  labs(title = "Distribución posterior vs prior para la pendiente",
+       x = expression(beta[1]),
+       y = "Densidad") +
+  theme_minimal()
+```
+
+Se presentan también los estimadores centrales:
+
+```{r}
+# Estimadores centrales y cuantiles
+summary_pos <- data.frame(
+  Parámetro = colnames(posterior),
+  Media     = apply(posterior, 2, mean),
+  Mediana   = apply(posterior, 2, median)
+)
+summary_pos
+```
+
+Entonces, $\beta_0 \approx -0.89$ indica que, para una mujer con glucosa
+promedio, el logit de la probabilidad de tener diabetes es de -0.89.
+Para traducir esto a una probabilidad, aplicamos la función logística
+inversa:
+$\text{logit}^{-1}(\beta_0) = \frac{e^{-0.89}}{1 + e^{-0.89}} \approx \frac{0.411}{1 + 0.411} \approx \frac{0.411}{1.411} \approx 0.29$.
+Por lo tanto, la proporción estimada de diabetes para una mujer con
+glucosa promedio es de aproximadamente 29%.
+
+En cuanto a la pendiente $\beta_1 \approx 1.29$, siginifica que un
+aumento de 1 desviación estándar en los niveles de glucosa se asocia con
+un aumento en los odds de diabetes de $\exp(1.29) \approx 3.63$. Es
+decir, una mujer con niveles de glucosa 1 desviación estándar por encima
+del promedio tiene odds de tener diabetes aproximadamente 3.6 veces
+mayores que una mujer promedio. Este resultado es clínicamente
+significativo y coherente con la literatura sobre factores de riesgo en
+diabetes.
+
+En cuanto a predicciones se refiere, se puede evaluar si el modelo ajustado representa adecuadamente los datos observados, realizando una comprobación predictiva posterior:
+
+```{r warning=FALSE}
+pp_check(modelo, plotfun = "stat", stat = "mean") +
+xlab("probability of diabetes")
+# Se hacen 4000 simulaciones (4 cadenas*(2000 - 1000))
+```
+El histograma muestra la proporción de mujeres diagnosticadas con diabetes en cada uno de los 100 conjuntos de datos simulados desde la distribución predictiva posterior del modelo. La barra vertical azul oscuro representa la proporción real de casos de diabetes observada en los datos originales (alrededor del 33%). Es claro que la mayoría de las simulaciones generan proporciones cercanas a la observada, indicando que el modelo es capaz de reproducir razonablemente bien la tasa real de diabetes en la población. Esto proporciona evidencia adicional de que la estructura del modelo y las priors elegidas son adecuadas.
+
+Finalmente, se puede realizar una predicción sobre una nueva paciente
+con 140 mg/dL de glucosa transformando su valor usando la misma
+estandarización aplicada al conjunto original. Esto es necesario porque
+el modelo fue ajustado con la variable `glucose_std`, que representa
+glucosa en unidades de desviación estándar. Para esta paciente, el valor
+promedio de la predicción posterior fue:
+
+```{r}
+media_glucosa <- mean(datos$glucose)
+glucosa_nueva_centrada <- 140 - media_glucosa
+nueva_pac <- tibble(glucose_std = glucosa_nueva_centrada / std_gluc)
+pred_nueva <- posterior_predict(modelo, newdata = nueva_pac)
+```
+
+$$
+\mathbb{E}[Y_{\text{pred}}] = `r mean(pred_nueva)`
+$$
+
+

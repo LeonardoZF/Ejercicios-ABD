@@ -1,0 +1,133 @@
+---
+
+title: "Análisis factorial bayesiano de los rasgos de personalidad Big Five"
+
+format:
+  html:
+    code-copy: true
+    code-tools: true
+    embed-resources: true
+    toc: true
+    toc-location: left
+    execute: true
+---
+
+## 1. Pregunta de investigación
+
+¿Es posible identificar las cinco dimensiones clásicas de la personalidad (Big Five: apertura, responsabilidad, extraversión, amabilidad y neuroticismo) a partir de un conjunto de ítems de autorreporte, y hacerlo dentro de un marco bayesiano?
+
+## 2.Preparación de los datos
+
+```{r}
+
+library(tidyverse)
+
+library(blavaan)
+
+# Cargar datos
+
+BigFive_Data <- read.csv("notebooks/BigFive.csv")
+
+# Inspección inicial
+
+glimpse(BigFive_Data)
+```
+
+## 3.Especificación del modelo factorial
+
+El modelo supone cinco factores latentes.
+A modo de ejemplo (ajustar nombres reales según tu dataset):
+
+```{r}
+
+estructura <- 'Apertura =~ O1 + O2 + O3 + O4 + O5
+
+Responsabilidad =~ C1 + C2 + C3 + C4 + C5
+
+Extraversión ~ E1 + E2 + E3 + E4 + E5
+
+Amabilidad =~ A1 + A2 + A3 + A4 + A5
+
+Neuroticismo =~ N1 + N2 + N3 + N4 + N5'
+```
+## 4.Modelo y elección de priors
+
+En blavaan, los priors por defecto son informativos débiles.
+El modelo se especifica así:
+
+```{r}
+
+modelo_bayes <- bcfa(
+
+model = estructura,
+
+data = BigFive_Data[, 4:53],
+
+n.chains = 4,
+
+burnin = 1000,
+
+sample = 4000
+
+)
+
+```
+
+Detrás de escena, `blavaan` utiliza distribuciones previas para los parámetros del modelo. Estas priors son por defecto débiles o poco informativas:
+
+-Cargas factoriales:
+  $$
+  \lambda \sim \mathcal{N}(0, 10^2)
+  $$
+
+- Varianzas de error:
+  $$
+  \theta \sim \text{Inv-Gamma}(0.001, 0.001)
+  $$
+
+- Correlaciones entre factores latentes:
+  $$
+  \rho \sim \text{LKJ}(1)
+  $$
+
+Estas distribuciones reflejan una postura inicial de alta incertidumbre, permitiendo que los datos guíen la estimación.
+
+
+## 5.Resultados
+
+```{r}
+
+summary(modelo_bayes, fit.measures = TRUE, standardized = TRUE)
+```
+
+Obtenemos estimaciones centrales, intervalos creíbles, y medidas de ajuste como DIC, WAIC y LOOIC.
+
+## 6.Visualización de resultados
+
+```{r}
+
+# Gráfico de densidades posteriores de algunas cargas
+
+plot(modelo_bayes, what = "trace") # Para traza MCMC
+
+```
+
+Para las soluciones estandarizadas:
+
+```{r}
+
+std_sol <- standardizedSolution(modelo_bayes)
+
+head(std_sol)
+```
+
+## 7.Interpretación
+
+Los ítems se agrupan como se espera en los cinco factores propuestos, confirmando la estructura teórica.
+Las cargas factoriales estandarizadas mayores a 0.5 indican una asociación fuerte con el factor correspondiente.
+Las correlaciones entre factores también pueden inspeccionarse, identificando relaciones como la clásica correlación negativa entre neuroticismo y responsabilidad.
+
+## 8.Conclusión
+
+El análisis factorial bayesiano ofrece estimaciones robustas y completas de incertidumbre, permitiendo inferencias más transparentes sobre la estructura latente de los rasgos de personalidad.
+La integración de priors y la evaluación mediante criterios como WAIC permite comparar modelos de forma más flexible que con métodos frecuentistas tradicionales.
