@@ -217,7 +217,8 @@ modelo <- stan_glm(
 
 ```{r}
 summary(modelo)
-posterior <- as.matrix(modelo)
+# Extraer las muestras de la posterior como data.frame
+posterior <- as.data.frame(modelo)
 mcmc_intervals(posterior, pars = c("(Intercept)", "glucose_std"), transform = "exp") +
   ggtitle("Intervalos de credibilidad (80% y 95%) para Odds Ratio")
 ```
@@ -237,8 +238,6 @@ Se ilustra además el cambio de la prior a la posterior después de haber
 tomado en cuenta los datos
 
 ```{r}
-# Extraer las muestras de la posterior como data.frame
-posterior <- as.data.frame(modelo)
 prior_b0 <- function(x) dnorm(x, mean = -0.7, sd = 1)
 prior_b1 <- function(x) dnorm(x, mean = 1.13, sd = 0.3)
 
@@ -265,9 +264,6 @@ ggplot(posterior, aes(x = glucose_std)) +
 Se presentan también los estimadores centrales:
 
 ```{r}
-# Extraer muestras posteriores
-posterior_samples <- as.matrix(modelo)
-
 # Estimadores centrales y cuantiles
 summary_pos <- data.frame(
   Parámetro = colnames(posterior),
@@ -275,7 +271,6 @@ summary_pos <- data.frame(
   Mediana   = apply(posterior_samples, 2, median)
 )
 summary_pos
-
 ```
 
 Entonces, $\beta_0 \approx -0.89$ indica que, para una mujer con glucosa
@@ -284,8 +279,7 @@ Para traducir esto a una probabilidad, aplicamos la función logística
 inversa:
 $\text{logit}^{-1}(\beta_0) = \frac{e^{-0.89}}{1 + e^{-0.89}} \approx \frac{0.411}{1 + 0.411} \approx \frac{0.411}{1.411} \approx 0.29$.
 Por lo tanto, la proporción estimada de diabetes para una mujer con
-glucosa promedio es de aproximadamente 29%, que es similar a lo
-observado en los datos (33%)
+glucosa promedio es de aproximadamente 29%.
 
 En cuanto a la pendiente $\beta_1 \approx 1.29$, siginifica que un
 aumento de 1 desviación estándar en los niveles de glucosa se asocia con
@@ -296,11 +290,20 @@ mayores que una mujer promedio. Este resultado es clínicamente
 significativo y coherente con la literatura sobre factores de riesgo en
 diabetes.
 
+En cuanto a predicciones se refiere, se puede evaluar si el modelo ajustado representa adecuadamente los datos observados, realizando una comprobación predictiva posterior:
+
+```{r warning=FALSE}
+pp_check(modelo, plotfun = "stat", stat = "mean") +
+xlab("probability of diabetes")
+# Se hacen 4000 simulaciones (4 cadenas*(2000 - 1000))
+```
+El histograma muestra la proporción de mujeres diagnosticadas con diabetes en cada uno de los 100 conjuntos de datos simulados desde la distribución predictiva posterior del modelo. La barra vertical azul oscuro representa la proporción real de casos de diabetes observada en los datos originales (alrededor del 33%). Es claro que la mayoría de las simulaciones generan proporciones cercanas a la observada, indicando que el modelo es capaz de reproducir razonablemente bien la tasa real de diabetes en la población. Esto proporciona evidencia adicional de que la estructura del modelo y las priors elegidas son adecuadas.
+
 Finalmente, se puede realizar una predicción sobre una nueva paciente
 con 140 mg/dL de glucosa transformando su valor usando la misma
 estandarización aplicada al conjunto original. Esto es necesario porque
 el modelo fue ajustado con la variable `glucose_std`, que representa
-glucosa en unidades de desviación estándar.Para esta paciente, el valor
+glucosa en unidades de desviación estándar. Para esta paciente, el valor
 promedio de la predicción posterior fue:
 
 ```{r}
@@ -313,3 +316,5 @@ pred_nueva <- posterior_predict(modelo, newdata = nueva_pac)
 $$
 \mathbb{E}[Y_{\text{pred}}] = `r mean(pred_nueva)`
 $$
+
+
