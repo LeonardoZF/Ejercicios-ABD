@@ -267,8 +267,8 @@ Se presentan también los estimadores centrales:
 # Estimadores centrales y cuantiles
 summary_pos <- data.frame(
   Parámetro = colnames(posterior),
-  Media     = apply(posterior_samples, 2, mean),
-  Mediana   = apply(posterior_samples, 2, median)
+  Media     = apply(posterior, 2, mean),
+  Mediana   = apply(posterior, 2, median)
 )
 summary_pos
 ```
