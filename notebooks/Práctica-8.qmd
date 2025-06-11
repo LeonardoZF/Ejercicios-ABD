@@ -1,5 +1,5 @@
 ---
-title: "Tema 8: Práctica"
+title: "Tema 8: Práctica final"
 format:
   html:
     code-copy:       true
@@ -167,7 +167,7 @@ Se ajusta el modelo utilizando Stan, especificando las priors y la función de v
 ```{r}
 modelo <- stan_glm(
   diabetes ~ glucose_std,
-  data = datos,
+  data = datos, 
   family = binomial(link = "logit"),
   prior = normal(1.13, 0.3),
   prior_intercept = normal(-0.7, 1),
